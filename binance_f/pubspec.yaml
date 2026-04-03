@@ -1,5 +1,5 @@
 name: binance_f
-description: "A new Flutter project."
+description: "Flutter client for Binance."
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -9,11 +9,28 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_riverpod: ^3.3.1
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.11.0
+  dio: ^5.9.2
+  crypto: ^3.0.6
+  talker: ^5.1.16
+  talker_flutter: ^5.1.16
+  talker_dio_logger: ^5.1.16
+  talker_riverpod_logger: ^5.1.16
+  auto_route: ^11.1.0
+  get_it: ^9.2.1
+  flutter_secure_storage: ^10.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  freezed: ^3.2.5
+  json_serializable: ^6.13.1
+  build_runner: ^2.13.1
+  auto_route_generator: ^10.5.0
+  mocktail: ^1.0.4
 
 flutter:
   uses-material-design: true
