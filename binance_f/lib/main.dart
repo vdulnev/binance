@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talker/talker.dart';
+import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 
-void main() {
-  runApp(const MainApp());
-}
+import 'app.dart';
+import 'core/di/service_locator.dart';
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initServiceLocator();
 
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
-    );
-  }
+  runApp(
+    ProviderScope(
+      observers: [TalkerRiverpodObserver(talker: sl<Talker>())],
+      child: const BinanceApp(),
+    ),
+  );
 }
