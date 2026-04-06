@@ -13,9 +13,9 @@ final authProvider = NotifierProvider<AuthNotifier, AuthState>(
 );
 
 class AuthNotifier extends Notifier<AuthState> {
-  late final AuthRepository _repository;
-  late final CredentialsManager _credentialsManager;
-  late final SessionManager _sessionManager;
+  late AuthRepository _repository;
+  late CredentialsManager _credentialsManager;
+  late SessionManager _sessionManager;
 
   @override
   AuthState build() {

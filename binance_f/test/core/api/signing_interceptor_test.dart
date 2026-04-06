@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:binance_f/core/api/signing_interceptor.dart';
 import 'package:binance_f/core/security/secure_storage_service.dart';
 import 'package:dio/dio.dart';
@@ -29,20 +31,17 @@ void main() {
         queryParameters: {'symbol': 'BTCUSDT'},
       );
 
-      RequestOptions? result;
+      final completer = Completer<RequestOptions>();
       interceptor.onRequest(
         options,
-        _CapturingRequestHandler(onNext: (o) => result = o),
+        _CapturingRequestHandler(onNext: (o) => completer.complete(o)),
       );
 
-      // Allow async to complete
-      await Future<void>.delayed(Duration.zero);
-
-      expect(result, isNotNull);
-      expect(result!.headers['X-MBX-APIKEY'], 'test-api-key');
-      expect(result!.queryParameters.containsKey('timestamp'), isTrue);
-      expect(result!.queryParameters.containsKey('signature'), isTrue);
-      expect((result!.queryParameters['signature'] as String).length, 64);
+      final result = await completer.future;
+      expect(result.headers['X-MBX-APIKEY'], 'test-api-key');
+      expect(result.queryParameters.containsKey('timestamp'), isTrue);
+      expect(result.queryParameters.containsKey('signature'), isTrue);
+      expect((result.queryParameters['signature'] as String).length, 64);
     });
 
     test('passes through unsigned when no keys', () async {

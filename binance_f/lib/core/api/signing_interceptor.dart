@@ -12,6 +12,10 @@ class SigningInterceptor extends Interceptor {
 
   final SecureStorageService _storage;
 
+  /// Offset in milliseconds: serverTime - localTime.
+  int _timeOffset = 0;
+  bool _timeSynced = false;
+
   @override
   Future<void> onRequest(
     RequestOptions options,
@@ -25,10 +29,14 @@ class SigningInterceptor extends Interceptor {
       return;
     }
 
+    if (!_timeSynced) {
+      await _syncTime(options.baseUrl);
+    }
+
     options.headers['X-MBX-APIKEY'] = apiKey;
 
-    final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-    options.queryParameters['timestamp'] = timestamp;
+    final timestamp = DateTime.now().millisecondsSinceEpoch + _timeOffset;
+    options.queryParameters['timestamp'] = timestamp.toString();
 
     final queryString = options.queryParameters.entries
         .map((e) => '${e.key}=${e.value}')
@@ -38,5 +46,21 @@ class SigningInterceptor extends Interceptor {
     options.queryParameters['signature'] = signature;
 
     handler.next(options);
+  }
+
+  Future<void> _syncTime(String baseUrl) async {
+    try {
+      final dio = Dio(BaseOptions(baseUrl: baseUrl));
+      final localBefore = DateTime.now().millisecondsSinceEpoch;
+      final response = await dio.get<Map<String, dynamic>>('/api/v3/time');
+      final localAfter = DateTime.now().millisecondsSinceEpoch;
+      final serverTime = response.data!['serverTime'] as int;
+      final localTime = (localBefore + localAfter) ~/ 2;
+      _timeOffset = serverTime - localTime;
+      _timeSynced = true;
+    } on DioException {
+      // If sync fails, proceed with local time.
+      _timeSynced = true;
+    }
   }
 }

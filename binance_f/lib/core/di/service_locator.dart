@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:talker/talker.dart';
 
+import '../../features/account/data/account_repository.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../api/binance_client.dart';
 import '../auth/credentials_manager.dart';
@@ -38,9 +39,12 @@ Future<void> initServiceLocator() async {
     ),
   );
 
-  // Repository
+  // Repositories
   sl.registerLazySingleton<AuthRepository>(
     () => BinanceAuthRepository(dio: sl<Dio>()),
+  );
+  sl.registerLazySingleton<AccountRepository>(
+    () => BinanceAccountRepository(dio: sl<Dio>()),
   );
 
   // Router
