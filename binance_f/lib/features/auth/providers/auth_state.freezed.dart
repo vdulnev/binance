@@ -55,13 +55,12 @@ extension AuthStatePatterns on AuthState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( AuthUnauthenticated value)?  unauthenticated,TResult Function( AuthAuthenticating value)?  authenticating,TResult Function( AuthRequiresTwoFactor value)?  requiresTwoFactor,TResult Function( AuthAuthenticated value)?  authenticated,TResult Function( AuthError value)?  error,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( AuthUnauthenticated value)?  unauthenticated,TResult Function( AuthAuthenticating value)?  authenticating,TResult Function( AuthAuthenticated value)?  authenticated,TResult Function( AuthError value)?  error,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case AuthUnauthenticated() when unauthenticated != null:
 return unauthenticated(_that);case AuthAuthenticating() when authenticating != null:
-return authenticating(_that);case AuthRequiresTwoFactor() when requiresTwoFactor != null:
-return requiresTwoFactor(_that);case AuthAuthenticated() when authenticated != null:
+return authenticating(_that);case AuthAuthenticated() when authenticated != null:
 return authenticated(_that);case AuthError() when error != null:
 return error(_that);case _:
   return orElse();
@@ -81,13 +80,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( AuthUnauthenticated value)  unauthenticated,required TResult Function( AuthAuthenticating value)  authenticating,required TResult Function( AuthRequiresTwoFactor value)  requiresTwoFactor,required TResult Function( AuthAuthenticated value)  authenticated,required TResult Function( AuthError value)  error,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( AuthUnauthenticated value)  unauthenticated,required TResult Function( AuthAuthenticating value)  authenticating,required TResult Function( AuthAuthenticated value)  authenticated,required TResult Function( AuthError value)  error,}){
 final _that = this;
 switch (_that) {
 case AuthUnauthenticated():
 return unauthenticated(_that);case AuthAuthenticating():
-return authenticating(_that);case AuthRequiresTwoFactor():
-return requiresTwoFactor(_that);case AuthAuthenticated():
+return authenticating(_that);case AuthAuthenticated():
 return authenticated(_that);case AuthError():
 return error(_that);}
 }
@@ -103,13 +101,12 @@ return error(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( AuthUnauthenticated value)?  unauthenticated,TResult? Function( AuthAuthenticating value)?  authenticating,TResult? Function( AuthRequiresTwoFactor value)?  requiresTwoFactor,TResult? Function( AuthAuthenticated value)?  authenticated,TResult? Function( AuthError value)?  error,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( AuthUnauthenticated value)?  unauthenticated,TResult? Function( AuthAuthenticating value)?  authenticating,TResult? Function( AuthAuthenticated value)?  authenticated,TResult? Function( AuthError value)?  error,}){
 final _that = this;
 switch (_that) {
 case AuthUnauthenticated() when unauthenticated != null:
 return unauthenticated(_that);case AuthAuthenticating() when authenticating != null:
-return authenticating(_that);case AuthRequiresTwoFactor() when requiresTwoFactor != null:
-return requiresTwoFactor(_that);case AuthAuthenticated() when authenticated != null:
+return authenticating(_that);case AuthAuthenticated() when authenticated != null:
 return authenticated(_that);case AuthError() when error != null:
 return error(_that);case _:
   return null;
@@ -128,13 +125,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  unauthenticated,TResult Function()?  authenticating,TResult Function( String twoFactorToken,  TwoFactorType type)?  requiresTwoFactor,TResult Function( String accessToken,  String refreshToken)?  authenticated,TResult Function( String message,  int? code)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  unauthenticated,TResult Function()?  authenticating,TResult Function()?  authenticated,TResult Function( String message,  int? code)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case AuthUnauthenticated() when unauthenticated != null:
 return unauthenticated();case AuthAuthenticating() when authenticating != null:
-return authenticating();case AuthRequiresTwoFactor() when requiresTwoFactor != null:
-return requiresTwoFactor(_that.twoFactorToken,_that.type);case AuthAuthenticated() when authenticated != null:
-return authenticated(_that.accessToken,_that.refreshToken);case AuthError() when error != null:
+return authenticating();case AuthAuthenticated() when authenticated != null:
+return authenticated();case AuthError() when error != null:
 return error(_that.message,_that.code);case _:
   return orElse();
 
@@ -153,13 +149,12 @@ return error(_that.message,_that.code);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  unauthenticated,required TResult Function()  authenticating,required TResult Function( String twoFactorToken,  TwoFactorType type)  requiresTwoFactor,required TResult Function( String accessToken,  String refreshToken)  authenticated,required TResult Function( String message,  int? code)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  unauthenticated,required TResult Function()  authenticating,required TResult Function()  authenticated,required TResult Function( String message,  int? code)  error,}) {final _that = this;
 switch (_that) {
 case AuthUnauthenticated():
 return unauthenticated();case AuthAuthenticating():
-return authenticating();case AuthRequiresTwoFactor():
-return requiresTwoFactor(_that.twoFactorToken,_that.type);case AuthAuthenticated():
-return authenticated(_that.accessToken,_that.refreshToken);case AuthError():
+return authenticating();case AuthAuthenticated():
+return authenticated();case AuthError():
 return error(_that.message,_that.code);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -174,13 +169,12 @@ return error(_that.message,_that.code);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  unauthenticated,TResult? Function()?  authenticating,TResult? Function( String twoFactorToken,  TwoFactorType type)?  requiresTwoFactor,TResult? Function( String accessToken,  String refreshToken)?  authenticated,TResult? Function( String message,  int? code)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  unauthenticated,TResult? Function()?  authenticating,TResult? Function()?  authenticated,TResult? Function( String message,  int? code)?  error,}) {final _that = this;
 switch (_that) {
 case AuthUnauthenticated() when unauthenticated != null:
 return unauthenticated();case AuthAuthenticating() when authenticating != null:
-return authenticating();case AuthRequiresTwoFactor() when requiresTwoFactor != null:
-return requiresTwoFactor(_that.twoFactorToken,_that.type);case AuthAuthenticated() when authenticated != null:
-return authenticated(_that.accessToken,_that.refreshToken);case AuthError() when error != null:
+return authenticating();case AuthAuthenticated() when authenticated != null:
+return authenticated();case AuthError() when error != null:
 return error(_that.message,_that.code);case _:
   return null;
 
@@ -256,138 +250,34 @@ String toString() {
 /// @nodoc
 
 
-class AuthRequiresTwoFactor implements AuthState {
-  const AuthRequiresTwoFactor({required this.twoFactorToken, required this.type});
-  
-
- final  String twoFactorToken;
- final  TwoFactorType type;
-
-/// Create a copy of AuthState
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$AuthRequiresTwoFactorCopyWith<AuthRequiresTwoFactor> get copyWith => _$AuthRequiresTwoFactorCopyWithImpl<AuthRequiresTwoFactor>(this, _$identity);
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthRequiresTwoFactor&&(identical(other.twoFactorToken, twoFactorToken) || other.twoFactorToken == twoFactorToken)&&(identical(other.type, type) || other.type == type));
-}
-
-
-@override
-int get hashCode => Object.hash(runtimeType,twoFactorToken,type);
-
-@override
-String toString() {
-  return 'AuthState.requiresTwoFactor(twoFactorToken: $twoFactorToken, type: $type)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class $AuthRequiresTwoFactorCopyWith<$Res> implements $AuthStateCopyWith<$Res> {
-  factory $AuthRequiresTwoFactorCopyWith(AuthRequiresTwoFactor value, $Res Function(AuthRequiresTwoFactor) _then) = _$AuthRequiresTwoFactorCopyWithImpl;
-@useResult
-$Res call({
- String twoFactorToken, TwoFactorType type
-});
-
-
-
-
-}
-/// @nodoc
-class _$AuthRequiresTwoFactorCopyWithImpl<$Res>
-    implements $AuthRequiresTwoFactorCopyWith<$Res> {
-  _$AuthRequiresTwoFactorCopyWithImpl(this._self, this._then);
-
-  final AuthRequiresTwoFactor _self;
-  final $Res Function(AuthRequiresTwoFactor) _then;
-
-/// Create a copy of AuthState
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? twoFactorToken = null,Object? type = null,}) {
-  return _then(AuthRequiresTwoFactor(
-twoFactorToken: null == twoFactorToken ? _self.twoFactorToken : twoFactorToken // ignore: cast_nullable_to_non_nullable
-as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as TwoFactorType,
-  ));
-}
-
-
-}
-
-/// @nodoc
-
-
 class AuthAuthenticated implements AuthState {
-  const AuthAuthenticated({required this.accessToken, required this.refreshToken});
+  const AuthAuthenticated();
   
 
- final  String accessToken;
- final  String refreshToken;
 
-/// Create a copy of AuthState
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$AuthAuthenticatedCopyWith<AuthAuthenticated> get copyWith => _$AuthAuthenticatedCopyWithImpl<AuthAuthenticated>(this, _$identity);
+
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthAuthenticated&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthAuthenticated);
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,accessToken,refreshToken);
+int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'AuthState.authenticated(accessToken: $accessToken, refreshToken: $refreshToken)';
+  return 'AuthState.authenticated()';
 }
 
 
 }
 
-/// @nodoc
-abstract mixin class $AuthAuthenticatedCopyWith<$Res> implements $AuthStateCopyWith<$Res> {
-  factory $AuthAuthenticatedCopyWith(AuthAuthenticated value, $Res Function(AuthAuthenticated) _then) = _$AuthAuthenticatedCopyWithImpl;
-@useResult
-$Res call({
- String accessToken, String refreshToken
-});
 
 
-
-
-}
-/// @nodoc
-class _$AuthAuthenticatedCopyWithImpl<$Res>
-    implements $AuthAuthenticatedCopyWith<$Res> {
-  _$AuthAuthenticatedCopyWithImpl(this._self, this._then);
-
-  final AuthAuthenticated _self;
-  final $Res Function(AuthAuthenticated) _then;
-
-/// Create a copy of AuthState
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? accessToken = null,Object? refreshToken = null,}) {
-  return _then(AuthAuthenticated(
-accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
-as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
-as String,
-  ));
-}
-
-
-}
 
 /// @nodoc
 

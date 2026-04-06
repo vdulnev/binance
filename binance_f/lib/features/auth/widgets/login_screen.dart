@@ -16,14 +16,14 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  final _apiKeyController = TextEditingController();
+  final _apiSecretController = TextEditingController();
+  bool _obscureSecret = true;
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _apiKeyController.dispose();
+    _apiSecretController.dispose();
     super.dispose();
   }
 
@@ -31,10 +31,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authProvider, (_, state) {
       switch (state) {
-        case AuthRequiresTwoFactor(:final twoFactorToken, :final type):
-          context.router.push(
-            TwoFactorRoute(twoFactorToken: twoFactorToken, type: type),
-          );
         case AuthAuthenticated():
           context.router.replaceAll([const HomeRoute()]);
         case AuthError(:final message):
@@ -67,38 +63,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     'Binance',
                     style: Theme.of(context).textTheme.headlineLarge,
                   ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Enter your API credentials',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   const SizedBox(height: 48),
                   TextFormField(
-                    controller: _emailController,
+                    controller: _apiKeyController,
                     decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined),
+                      labelText: 'API Key',
+                      prefixIcon: Icon(Icons.key_outlined),
                     ),
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    validator: _validateEmail,
+                    validator: _validateRequired,
                     enabled: !isLoading,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
-                    controller: _passwordController,
+                    controller: _apiSecretController,
                     decoration: InputDecoration(
-                      labelText: 'Password',
+                      labelText: 'API Secret',
                       prefixIcon: const Icon(Icons.lock_outlined),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword
+                          _obscureSecret
                               ? Icons.visibility_off
                               : Icons.visibility,
                         ),
-                        onPressed: () => setState(
-                          () => _obscurePassword = !_obscurePassword,
-                        ),
+                        onPressed: () =>
+                            setState(() => _obscureSecret = !_obscureSecret),
                       ),
                     ),
-                    obscureText: _obscurePassword,
-                    autofillHints: const [AutofillHints.password],
-                    validator: _validatePassword,
+                    obscureText: _obscureSecret,
+                    validator: _validateRequired,
                     enabled: !isLoading,
                   ),
                   const SizedBox(height: 32),
@@ -112,7 +109,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               width: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text('Log In'),
+                          : const Text('Connect'),
                     ),
                   ),
                 ],
@@ -124,19 +121,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Email is required';
-    }
-    if (!value.contains('@')) {
-      return 'Enter a valid email';
-    }
-    return null;
-  }
-
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Password is required';
+  String? _validateRequired(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'This field is required';
     }
     return null;
   }
@@ -146,8 +133,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref
         .read(authProvider.notifier)
         .login(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
+          apiKey: _apiKeyController.text.trim(),
+          apiSecret: _apiSecretController.text.trim(),
         );
   }
 }

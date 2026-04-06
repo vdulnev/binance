@@ -1,12 +1,12 @@
-import 'token_manager.dart';
+import 'credentials_manager.dart';
 
 class SessionManager {
-  SessionManager({required TokenManager tokenManager})
-    : _tokenManager = tokenManager;
+  SessionManager({required CredentialsManager credentialsManager})
+    : _credentialsManager = credentialsManager;
 
-  final TokenManager _tokenManager;
+  final CredentialsManager _credentialsManager;
 
-  Future<bool> isSessionValid() => _tokenManager.hasTokens();
+  Future<bool> isSessionValid() => _credentialsManager.hasCredentials();
 
-  Future<void> invalidateSession() => _tokenManager.clearTokens();
+  Future<void> invalidateSession() => _credentialsManager.clearCredentials();
 }

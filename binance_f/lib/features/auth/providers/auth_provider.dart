@@ -1,13 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/auth/credentials_manager.dart';
 import '../../../core/auth/session_manager.dart';
-import '../../../core/auth/token_manager.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/models/api_error.dart';
 import '../data/auth_repository.dart';
-import '../data/models/login_request.dart';
-import '../data/models/two_factor_request.dart';
 import 'auth_state.dart';
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(
@@ -16,13 +14,13 @@ final authProvider = NotifierProvider<AuthNotifier, AuthState>(
 
 class AuthNotifier extends Notifier<AuthState> {
   late final AuthRepository _repository;
-  late final TokenManager _tokenManager;
+  late final CredentialsManager _credentialsManager;
   late final SessionManager _sessionManager;
 
   @override
   AuthState build() {
     _repository = sl<AuthRepository>();
-    _tokenManager = sl<TokenManager>();
+    _credentialsManager = sl<CredentialsManager>();
     _sessionManager = sl<SessionManager>();
     _checkSession();
     return const AuthState.unauthenticated();
@@ -30,98 +28,37 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> _checkSession() async {
     final valid = await _sessionManager.isSessionValid();
-    if (!valid) return;
-
-    final accessToken = await _tokenManager.getAccessToken();
-    final refreshToken = await _tokenManager.getRefreshToken();
-    if (accessToken != null && refreshToken != null) {
-      state = AuthState.authenticated(
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      );
+    if (valid) {
+      state = const AuthState.authenticated();
     }
   }
 
-  Future<void> login({required String email, required String password}) async {
-    state = const AuthState.authenticating();
-    try {
-      final response = await _repository.login(
-        LoginRequest(email: email, password: password),
-      );
-
-      if (response.requiresTwoFactor &&
-          response.twoFactorToken != null &&
-          response.twoFactorType != null) {
-        state = AuthState.requiresTwoFactor(
-          twoFactorToken: response.twoFactorToken!,
-          type: response.twoFactorType!,
-        );
-        return;
-      }
-
-      if (response.accessToken != null && response.refreshToken != null) {
-        await _tokenManager.saveTokens(
-          accessToken: response.accessToken!,
-          refreshToken: response.refreshToken!,
-        );
-        state = AuthState.authenticated(
-          accessToken: response.accessToken!,
-          refreshToken: response.refreshToken!,
-        );
-        return;
-      }
-
-      state = const AuthState.error(message: 'Unexpected response from server');
-    } on DioException catch (e) {
-      _handleError(e);
-    }
-  }
-
-  Future<void> verifyTwoFactor({
-    required String code,
-    required TwoFactorType type,
-    required String twoFactorToken,
+  Future<void> login({
+    required String apiKey,
+    required String apiSecret,
   }) async {
     state = const AuthState.authenticating();
     try {
-      final response = await _repository.verifyTwoFactor(
-        TwoFactorRequest(
-          twoFactorToken: twoFactorToken,
-          code: code,
-          type: type,
-        ),
+      // Store credentials first so the SigningInterceptor can use them.
+      await _credentialsManager.saveCredentials(
+        apiKey: apiKey,
+        apiSecret: apiSecret,
       );
 
-      if (response.accessToken != null && response.refreshToken != null) {
-        await _tokenManager.saveTokens(
-          accessToken: response.accessToken!,
-          refreshToken: response.refreshToken!,
-        );
-        state = AuthState.authenticated(
-          accessToken: response.accessToken!,
-          refreshToken: response.refreshToken!,
-        );
-        return;
-      }
+      // Verify by calling a signed endpoint.
+      await _repository.verifyCredentials();
 
-      state = const AuthState.error(message: 'Verification failed');
+      state = const AuthState.authenticated();
     } on DioException catch (e) {
+      // Credentials failed — clear them.
+      await _credentialsManager.clearCredentials();
       _handleError(e);
     }
   }
 
   Future<void> logout() async {
-    final accessToken = await _tokenManager.getAccessToken();
-    try {
-      if (accessToken != null) {
-        await _repository.logout(accessToken);
-      }
-    } on DioException {
-      // Best-effort revocation — always clear local state
-    } finally {
-      await _sessionManager.invalidateSession();
-      state = const AuthState.unauthenticated();
-    }
+    await _sessionManager.invalidateSession();
+    state = const AuthState.unauthenticated();
   }
 
   void _handleError(DioException e) {
@@ -134,6 +71,12 @@ class AuthNotifier extends Notifier<AuthState> {
       } else if (error.isIpBanned) {
         state = const AuthState.error(
           message: 'Access temporarily blocked. Try again later.',
+        );
+      } else if (error.isInvalidSignature) {
+        state = const AuthState.error(message: 'Invalid API key or secret.');
+      } else if (error.isTimestampError) {
+        state = const AuthState.error(
+          message: 'Clock out of sync. Check your device time settings.',
         );
       } else {
         state = AuthState.error(

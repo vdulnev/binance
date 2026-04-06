@@ -4,8 +4,8 @@ import 'package:talker/talker.dart';
 
 import '../../features/auth/data/auth_repository.dart';
 import '../api/binance_client.dart';
+import '../auth/credentials_manager.dart';
 import '../auth/session_manager.dart';
-import '../auth/token_manager.dart';
 import '../logging/app_talker.dart';
 import '../router/app_router.dart';
 import '../router/auth_guard.dart';
@@ -23,11 +23,11 @@ Future<void> initServiceLocator() async {
   );
 
   // Auth
-  sl.registerLazySingleton<TokenManager>(
-    () => TokenManager(storage: sl<SecureStorageService>()),
+  sl.registerLazySingleton<CredentialsManager>(
+    () => CredentialsManager(storage: sl<SecureStorageService>()),
   );
   sl.registerLazySingleton<SessionManager>(
-    () => SessionManager(tokenManager: sl<TokenManager>()),
+    () => SessionManager(credentialsManager: sl<CredentialsManager>()),
   );
 
   // API
