@@ -20,8 +20,9 @@ dependencies:
   talker_riverpod_logger: ^5.1.16
   auto_route: ^11.1.0
   get_it: ^9.2.1
-  flutter_secure_storage: ^10.0.0
+  flutter_secure_storage: ^9.2.4
   decimal: ^3.0.2
+  fpdart: ^1.2.0
 
 dev_dependencies:
   flutter_test:

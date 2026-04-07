@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find lib:*)",
+      "Bash(find test:*)",
+      "mcp__dart__pub_dev_search",
+      "Bash(dart fix:*)",
+      "Bash(node:*)",
+      "Bash(flutter test:*)",
+      "Bash(ls /Users/vd/src/binance/binance_f/macos/Runner/*.entitlements)",
+      "Bash(find ~/.pub-cache/hosted/pub.dev -maxdepth 1 -type d -name flutter_riverpod-3*)",
+      "Bash(find ~/.pub-cache/hosted/pub.dev -maxdepth 1 -type d -name riverpod-3*)",
+      "Bash(find ~/.pub-cache/hosted -path *flutter_secure_storage*macos*.dart)",
+      "Bash(find /Users/vd/.pub-cache/hosted/pub.dev/flutter_secure_storage_macos-* -name *.swift)",
+      "Bash(curl -s https://pub.dev/api/packages/fpdart)",
+      "Bash(curl:*)",
+      "mcp__dart__pub",
+      "mcp__dart__analyze_files"
+    ]
+  }
+}

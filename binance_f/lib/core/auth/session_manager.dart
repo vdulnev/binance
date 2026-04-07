@@ -1,3 +1,6 @@
+import 'package:fpdart/fpdart.dart';
+
+import '../models/app_exception.dart';
 import 'credentials_manager.dart';
 
 class SessionManager {
@@ -6,7 +9,9 @@ class SessionManager {
 
   final CredentialsManager _credentialsManager;
 
-  Future<bool> isSessionValid() => _credentialsManager.hasCredentials();
+  TaskEither<AppException, bool> isSessionValid() =>
+      _credentialsManager.hasCredentials();
 
-  Future<void> invalidateSession() => _credentialsManager.clearCredentials();
+  TaskEither<AppException, Unit> invalidateSession() =>
+      _credentialsManager.clearCredentials();
 }

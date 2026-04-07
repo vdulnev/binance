@@ -1,0 +1,18 @@
+services:
+  claude-code:
+    build: .
+    container_name: claude-code-ollama
+    volumes:
+      - .:/app
+      # This keeps your plugins and sessions saved even if the container restarts
+      - claude_home:/home/node/.claude
+    environment:
+      - ANTHROPIC_BASE_URL=http://192.168.1.116:11434
+      - ANTHROPIC_API_KEY=ollama
+      - ANTHROPIC_AUTH_TOKEN=ollama
+    stdin_open: true
+    tty: true
+    command: --model gemma4:e4b --dangerously-skip-permissions
+
+volumes:
+  claude_home:

@@ -7,6 +7,7 @@ import 'package:binance_f/features/auth/providers/auth_provider.dart';
 import 'package:binance_f/features/auth/providers/auth_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:talker/talker.dart';
 
@@ -27,15 +28,6 @@ void main() {
     mockCredentials = MockCredentialsManager();
     mockSessionManager = MockSessionManager();
 
-    for (final reg in [
-      () => sl.isRegistered<AuthRepository>(),
-      () => sl.isRegistered<CredentialsManager>(),
-      () => sl.isRegistered<SessionManager>(),
-      () => sl.isRegistered<Talker>(),
-    ]) {
-      // no-op — just to keep the lints happy
-      reg();
-    }
     if (sl.isRegistered<AuthRepository>()) sl.unregister<AuthRepository>();
     if (sl.isRegistered<CredentialsManager>()) {
       sl.unregister<CredentialsManager>();
@@ -50,14 +42,16 @@ void main() {
 
     when(
       () => mockSessionManager.isSessionValid(),
-    ).thenAnswer((_) async => false);
-    when(() => mockCredentials.clearCredentials()).thenAnswer((_) async {});
+    ).thenReturn(TaskEither.right(false));
+    when(
+      () => mockCredentials.clearCredentials(),
+    ).thenReturn(TaskEither.right(unit));
     when(
       () => mockCredentials.saveCredentials(
         apiKey: any(named: 'apiKey'),
         apiSecret: any(named: 'apiSecret'),
       ),
-    ).thenAnswer((_) async {});
+    ).thenReturn(TaskEither.right(unit));
 
     container = ProviderContainer();
   });
@@ -78,7 +72,9 @@ void main() {
     });
 
     test('login success transitions to authenticated', () async {
-      when(() => mockRepo.verifyCredentials()).thenAnswer((_) async {});
+      when(
+        () => mockRepo.verifyCredentials(),
+      ).thenReturn(TaskEither.right(unit));
 
       await container
           .read(authProvider.notifier)
@@ -92,7 +88,7 @@ void main() {
       () async {
         when(
           () => mockRepo.verifyCredentials(),
-        ).thenThrow(const AppException.invalidSignature());
+        ).thenReturn(TaskEither.left(const AppException.invalidSignature()));
 
         await container
             .read(authProvider.notifier)
@@ -106,9 +102,11 @@ void main() {
     );
 
     test('rate limit error → friendly throttle message', () async {
-      when(
-        () => mockRepo.verifyCredentials(),
-      ).thenThrow(const AppException.rateLimit(message: 'Too many requests'));
+      when(() => mockRepo.verifyCredentials()).thenReturn(
+        TaskEither.left(
+          const AppException.rateLimit(message: 'Too many requests'),
+        ),
+      );
 
       await container
           .read(authProvider.notifier)
@@ -123,9 +121,9 @@ void main() {
     });
 
     test('IP ban → access blocked message', () async {
-      when(
-        () => mockRepo.verifyCredentials(),
-      ).thenThrow(const AppException.ipBan(message: 'IP banned'));
+      when(() => mockRepo.verifyCredentials()).thenReturn(
+        TaskEither.left(const AppException.ipBan(message: 'IP banned')),
+      );
 
       await container
           .read(authProvider.notifier)
@@ -140,7 +138,7 @@ void main() {
     test('clock skew → check device time message', () async {
       when(
         () => mockRepo.verifyCredentials(),
-      ).thenThrow(const AppException.clockSkew());
+      ).thenReturn(TaskEither.left(const AppException.clockSkew()));
 
       await container
           .read(authProvider.notifier)
@@ -155,7 +153,7 @@ void main() {
     test('network error → check connection message', () async {
       when(
         () => mockRepo.verifyCredentials(),
-      ).thenThrow(const AppException.network());
+      ).thenReturn(TaskEither.left(const AppException.network()));
 
       await container
           .read(authProvider.notifier)
@@ -167,10 +165,29 @@ void main() {
       );
     });
 
+    test('save credentials failure short-circuits and returns error', () async {
+      when(
+        () => mockCredentials.saveCredentials(
+          apiKey: any(named: 'apiKey'),
+          apiSecret: any(named: 'apiSecret'),
+        ),
+      ).thenReturn(
+        TaskEither.left(const AppException.unknown(message: 'storage offline')),
+      );
+
+      await container
+          .read(authProvider.notifier)
+          .login(apiKey: 'k', apiSecret: 's');
+
+      // verifyCredentials should never have been called.
+      verifyNever(() => mockRepo.verifyCredentials());
+      expect(container.read(authProvider), isA<AuthError>());
+    });
+
     test('logout transitions to unauthenticated', () async {
       when(
         () => mockSessionManager.invalidateSession(),
-      ).thenAnswer((_) async {});
+      ).thenReturn(TaskEither.right(unit));
 
       await container.read(authProvider.notifier).logout();
 

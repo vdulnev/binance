@@ -16,8 +16,12 @@ class AuthGuard extends AutoRouteGuard {
     NavigationResolver resolver,
     StackRouter router,
   ) async {
-    final isValid = await _sessionManager.isSessionValid();
-    if (isValid) {
+    // Treat any failure (storage unreachable, etc.) as "not logged in" and
+    // route to login. We never want a guard exception to leave navigation in
+    // a half-resolved state.
+    final result = await _sessionManager.isSessionValid().run();
+    final valid = result.getOrElse((_) => false);
+    if (valid) {
       resolver.next();
       return;
     }

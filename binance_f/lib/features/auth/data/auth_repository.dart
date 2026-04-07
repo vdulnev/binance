@@ -1,11 +1,13 @@
 import 'package:dio/dio.dart';
+import 'package:fpdart/fpdart.dart';
 
 import '../../../core/models/app_exception.dart';
 
 abstract class AuthRepository {
   /// Verifies API credentials by calling a signed account endpoint
-  /// (`GET /api/v3/account`). Throws an [AppException] on any failure.
-  Future<void> verifyCredentials();
+  /// (`GET /api/v3/account`). Returns `Right(unit)` on success and
+  /// `Left(AppException)` on any failure.
+  TaskEither<AppException, Unit> verifyCredentials();
 }
 
 class BinanceAuthRepository implements AuthRepository {
@@ -14,17 +16,22 @@ class BinanceAuthRepository implements AuthRepository {
   final Dio _dio;
 
   @override
-  Future<void> verifyCredentials() async {
-    try {
+  TaskEither<AppException, Unit> verifyCredentials() => TaskEither.tryCatch(
+    () async {
       // GET /api/v3/account is a SIGNED (USER_DATA) endpoint.
       // The SigningInterceptor adds the API key header, timestamp,
       // and HMAC-SHA256 signature automatically.
       await _dio.get<Map<String, dynamic>>('/api/v3/account');
-    } on DioException catch (e) {
-      // ErrorInterceptor wraps everything as AppException; re-throw it.
-      final wrapped = e.error;
-      if (wrapped is AppException) throw wrapped;
-      throw AppException.unknown(message: e.message);
-    }
-  }
+      return unit;
+    },
+    (err, _) {
+      // ErrorInterceptor wraps DioException.error as AppException.
+      // Anything else (e.g. parser failure) becomes Unknown.
+      if (err is AppException) return err;
+      if (err is DioException && err.error is AppException) {
+        return err.error! as AppException;
+      }
+      return AppException.unknown(message: err.toString());
+    },
+  );
 }
