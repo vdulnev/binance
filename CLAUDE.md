@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+- Always check docs/SPEC.md before implementing any feature.
+
 ## Project
 
 Client application for Binance (https://www.binance.com). The repository may contain several different implementations/platforms.
