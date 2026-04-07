@@ -15,6 +15,7 @@ If anything here conflicts with the parent spec, the parent spec wins for behavi
 | State management | **Riverpod** (`flutter_riverpod`) | `Notifier` / `AsyncNotifier` providers |
 | Routing | **auto_route** | code-gen, typed routes, guards |
 | DI / service location | **get_it** | registered in `lib/core/di/` |
+| Functional programming | **fpdart** | error handling |
 | Logging | **Talker** + custom redacting Dio logger + `talker_flutter` | in-process redaction of secrets |
 | Models / unions | **Freezed** + `json_serializable` | sealed classes for state + DTOs |
 | HTTP | **Dio** | with custom interceptors |
@@ -121,6 +122,7 @@ Tests mirror `lib/` under `test/`.
 - Deep link targets: symbol detail (`/symbol/:market/:symbol`), order detail.
 
 ### Error handling
+- Use functional style for error handling. Do not use try/catch.
 - All API errors normalized into `AppException` (sealed Freezed union):
   `Network | Auth | RateLimit | IpBan | InvalidSignature | ClockSkew | FilterViolation | BinanceApi(code,msg) | Unknown`.
 - `error_interceptor.dart` maps Binance error codes:
