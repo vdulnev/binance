@@ -1,82 +1,177 @@
 import 'package:binance_f/core/api/error_interceptor.dart';
-import 'package:binance_f/core/models/api_error.dart';
+import 'package:binance_f/core/models/app_exception.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   late ErrorInterceptor interceptor;
 
-  setUp(() {
-    interceptor = ErrorInterceptor();
-  });
+  DioException makeErr({
+    int? status,
+    Object? data,
+    Map<String, List<String>>? headers,
+    DioExceptionType type = DioExceptionType.badResponse,
+  }) {
+    final ro = RequestOptions(path: '/test');
+    return DioException(
+      requestOptions: ro,
+      type: type,
+      response: status == null
+          ? null
+          : Response<dynamic>(
+              requestOptions: ro,
+              statusCode: status,
+              data: data,
+              headers: headers == null ? null : Headers.fromMap(headers),
+            ),
+    );
+  }
 
-  group('ErrorInterceptor', () {
-    test('parses Binance error response into ApiException', () {
-      final requestOptions = RequestOptions(path: '/test');
-      final response = Response<dynamic>(
-        requestOptions: requestOptions,
-        statusCode: 400,
-        data: <String, dynamic>{'code': -1022, 'msg': 'Invalid signature.'},
-      );
-      final err = DioException(
-        requestOptions: requestOptions,
-        response: response,
-      );
+  AppException? capture(DioException err) {
+    AppException? out;
+    interceptor.onError(
+      err,
+      _CapturingHandler(onNext: (e) => out = e.error as AppException?),
+    );
+    return out;
+  }
 
-      DioException? rejected;
+  setUp(() => interceptor = ErrorInterceptor());
 
-      interceptor.onError(
-        err,
-        _CapturingHandler(onReject: (e) => rejected = e),
-      );
-
-      expect(rejected, isNotNull);
-      expect(rejected!.error, isA<ApiException>());
-      final apiException = rejected!.error as ApiException;
-      expect(apiException.error.code, -1022);
-      expect(apiException.error.msg, 'Invalid signature.');
-      expect(apiException.httpStatusCode, 400);
-      expect(apiException.isInvalidSignature, isTrue);
+  group('ErrorInterceptor mapping', () {
+    test('418 with no Retry-After → IpBan, bannedUntil null', () {
+      final out = capture(makeErr(status: 418));
+      expect(out, isA<IpBanException>());
+      expect((out! as IpBanException).bannedUntil, isNull);
     });
 
-    test('passes through non-Binance errors', () {
-      final requestOptions = RequestOptions(path: '/test');
-      final err = DioException(
-        requestOptions: requestOptions,
-        response: Response<dynamic>(
-          requestOptions: requestOptions,
-          statusCode: 500,
-          data: 'Internal Server Error',
+    test('418 with Retry-After → IpBan with bannedUntil set', () {
+      final out = capture(
+        makeErr(
+          status: 418,
+          headers: {
+            'retry-after': ['120'],
+          },
         ),
       );
-
-      DioException? passed;
-      interceptor.onError(err, _CapturingHandler(onNext: (e) => passed = e));
-
-      expect(passed, isNotNull);
-      expect(passed!.error, isNot(isA<ApiException>()));
+      expect(out, isA<IpBanException>());
+      expect((out! as IpBanException).bannedUntil, isNotNull);
     });
 
-    test('passes through when no response', () {
-      final requestOptions = RequestOptions(path: '/test');
-      final err = DioException(requestOptions: requestOptions);
+    test('429 → RateLimit with retryAfterSeconds', () {
+      final out = capture(
+        makeErr(
+          status: 429,
+          data: {'code': -1003, 'msg': 'Too many requests.'},
+          headers: {
+            'retry-after': ['5'],
+          },
+        ),
+      );
+      expect(out, isA<RateLimitException>());
+      expect((out! as RateLimitException).retryAfterSeconds, 5);
+    });
 
-      DioException? passed;
-      interceptor.onError(err, _CapturingHandler(onNext: (e) => passed = e));
+    test('-1003 with no 429 → RateLimit', () {
+      final out = capture(
+        makeErr(status: 400, data: {'code': -1003, 'msg': 'TOO_MANY_REQUESTS'}),
+      );
+      expect(out, isA<RateLimitException>());
+    });
 
-      expect(passed, isNotNull);
+    test('401 → AuthException', () {
+      final out = capture(makeErr(status: 401));
+      expect(out, isA<AuthException>());
+    });
+
+    test('-1021 → ClockSkew', () {
+      final out = capture(
+        makeErr(status: 400, data: {'code': -1021, 'msg': 'Timestamp ahead.'}),
+      );
+      expect(out, isA<ClockSkewException>());
+    });
+
+    test('-1022 → InvalidSignature', () {
+      final out = capture(
+        makeErr(
+          status: 400,
+          data: {'code': -1022, 'msg': 'Invalid signature.'},
+        ),
+      );
+      expect(out, isA<InvalidSignatureException>());
+    });
+
+    test('-2014 → AuthException', () {
+      final out = capture(
+        makeErr(
+          status: 401,
+          data: {'code': -2014, 'msg': 'API-key format invalid.'},
+        ),
+      );
+      expect(out, isA<AuthException>());
+      expect((out! as AuthException).code, -2014);
+    });
+
+    test('-2015 → AuthException', () {
+      final out = capture(
+        makeErr(
+          status: 401,
+          data: {'code': -2015, 'msg': 'Invalid API-key, IP, or perms.'},
+        ),
+      );
+      expect(out, isA<AuthException>());
+      expect((out! as AuthException).code, -2015);
+    });
+
+    test('5xx → Network(retriable: true)', () {
+      final out = capture(makeErr(status: 503));
+      expect(out, isA<NetworkException>());
+      expect((out! as NetworkException).retriable, isTrue);
+    });
+
+    test('connection timeout → Network(retriable: false)', () {
+      final out = capture(makeErr(type: DioExceptionType.connectionTimeout));
+      expect(out, isA<NetworkException>());
+      expect((out! as NetworkException).retriable, isFalse);
+    });
+
+    test('offline (connectionError) → Network(retriable: false)', () {
+      final out = capture(makeErr(type: DioExceptionType.connectionError));
+      expect(out, isA<NetworkException>());
+      expect((out! as NetworkException).retriable, isFalse);
+    });
+
+    test('arbitrary Binance code → BinanceApi', () {
+      final out = capture(
+        makeErr(
+          status: 400,
+          data: {'code': -1100, 'msg': 'Illegal characters.'},
+        ),
+      );
+      expect(out, isA<BinanceApiException>());
+      expect((out! as BinanceApiException).code, -1100);
+    });
+
+    test('does not double-wrap an existing AppException', () {
+      final ro = RequestOptions(path: '/x');
+      final err = DioException(
+        requestOptions: ro,
+        error: const AppException.network(),
+      );
+      AppException? out;
+      interceptor.onError(
+        err,
+        _CapturingHandler(onNext: (e) => out = e.error as AppException?),
+      );
+      expect(out, isA<NetworkException>());
     });
   });
 }
 
 class _CapturingHandler extends ErrorInterceptorHandler {
-  _CapturingHandler({this.onReject, this.onNext});
+  _CapturingHandler({this.onNext});
 
-  final void Function(DioException)? onReject;
   final void Function(DioException)? onNext;
-
-  @override
-  void reject(DioException err) => onReject?.call(err);
 
   @override
   void next(DioException err) => onNext?.call(err);

@@ -45,6 +45,10 @@ API keys are created on binance.com and stored in OS-level secure storage. Secre
 - `CLAUDE.md` — guidance for Claude Code when working in this repo.
 - Implementation directories (per platform) live alongside the docs.
 
+## Error hadling
+
+- log all errors using implementation depended logger
+
 ## Working on this project
 
 1. Read `docs/SPEC.md`.

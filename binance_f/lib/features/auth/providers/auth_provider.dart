@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talker/talker.dart';
 
 import '../../../core/auth/credentials_manager.dart';
 import '../../../core/auth/session_manager.dart';
 import '../../../core/di/service_locator.dart';
-import '../../../core/models/api_error.dart';
+import '../../../core/models/app_exception.dart';
 import '../data/auth_repository.dart';
 import 'auth_state.dart';
 
@@ -13,15 +14,18 @@ final authProvider = NotifierProvider<AuthNotifier, AuthState>(
 );
 
 class AuthNotifier extends Notifier<AuthState> {
+  // `late` (not `late final`) — Riverpod may rebuild and reassign these.
   late AuthRepository _repository;
   late CredentialsManager _credentialsManager;
   late SessionManager _sessionManager;
+  late Talker _talker;
 
   @override
   AuthState build() {
     _repository = sl<AuthRepository>();
     _credentialsManager = sl<CredentialsManager>();
     _sessionManager = sl<SessionManager>();
+    _talker = sl<Talker>();
     _checkSession();
     return const AuthState.unauthenticated();
   }
@@ -39,55 +43,68 @@ class AuthNotifier extends Notifier<AuthState> {
   }) async {
     state = const AuthState.authenticating();
     try {
-      // Store credentials first so the SigningInterceptor can use them.
       await _credentialsManager.saveCredentials(
         apiKey: apiKey,
         apiSecret: apiSecret,
       );
-
-      // Verify by calling a signed endpoint.
       await _repository.verifyCredentials();
-
+      _talker.info('Login succeeded.');
       state = const AuthState.authenticated();
-    } on DioException catch (e) {
-      // Credentials failed — clear them.
+    } on DioException catch (e, st) {
       await _credentialsManager.clearCredentials();
-      _handleError(e);
+      _talker.error('Login failed', e.error ?? e, st);
+      state = _stateFromError(e.error);
+    } on AppException catch (e, st) {
+      await _credentialsManager.clearCredentials();
+      _talker.error('Login failed', e, st);
+      state = _stateFromError(e);
+    } catch (e, st) {
+      await _credentialsManager.clearCredentials();
+      _talker.error('Login failed (unexpected)', e, st);
+      state = const AuthState.error(message: 'Unexpected error.');
     }
   }
 
   Future<void> logout() async {
     await _sessionManager.invalidateSession();
+    _talker.info('Logged out.');
     state = const AuthState.unauthenticated();
   }
 
-  void _handleError(DioException e) {
-    final error = e.error;
-    if (error is ApiException) {
-      if (error.isRateLimited) {
-        state = const AuthState.error(
-          message: 'Too many attempts. Please wait and try again.',
-        );
-      } else if (error.isIpBanned) {
-        state = const AuthState.error(
-          message: 'Access temporarily blocked. Try again later.',
-        );
-      } else if (error.isInvalidSignature) {
-        state = const AuthState.error(message: 'Invalid API key or secret.');
-      } else if (error.isTimestampError) {
-        state = const AuthState.error(
+  AuthState _stateFromError(Object? error) {
+    if (error is AppException) {
+      return switch (error) {
+        AuthException(:final message, :final code) => AuthState.error(
+          message: message,
+          code: code,
+        ),
+        InvalidSignatureException() => const AuthState.error(
+          message: 'Invalid API key or secret.',
+        ),
+        ClockSkewException() => const AuthState.error(
           message: 'Clock out of sync. Check your device time settings.',
-        );
-      } else {
-        state = AuthState.error(
-          message: error.error.msg,
-          code: error.error.code,
-        );
-      }
-      return;
+        ),
+        RateLimitException() => const AuthState.error(
+          message: 'Too many attempts. Please wait and try again.',
+        ),
+        IpBanException() => const AuthState.error(
+          message: 'Access temporarily blocked. Try again later.',
+        ),
+        FilterViolationException(:final filter, :final message) =>
+          AuthState.error(message: '$filter: $message'),
+        BinanceApiException(:final code, :final message) => AuthState.error(
+          message: message,
+          code: code,
+        ),
+        NetworkException() => const AuthState.error(
+          message: 'Network error. Check your connection.',
+        ),
+        UnknownException(:final message) => AuthState.error(
+          message: message ?? 'Unknown error.',
+        ),
+      };
     }
-
-    state = const AuthState.error(
+    return const AuthState.error(
       message: 'Network error. Check your connection.',
     );
   }
