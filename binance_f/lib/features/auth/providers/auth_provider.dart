@@ -4,6 +4,8 @@ import 'package:talker/talker.dart';
 import '../../../core/auth/credentials_manager.dart';
 import '../../../core/auth/session_manager.dart';
 import '../../../core/di/service_locator.dart';
+import '../../../core/env/env.dart';
+import '../../../core/env/env_manager.dart';
 import '../../../core/models/app_exception.dart';
 import '../data/auth_repository.dart';
 import 'auth_state.dart';
@@ -17,6 +19,7 @@ class AuthNotifier extends Notifier<AuthState> {
   late AuthRepository _repository;
   late CredentialsManager _credentials;
   late SessionManager _sessionManager;
+  late EnvManager _envManager;
   late Talker _talker;
 
   @override
@@ -24,6 +27,7 @@ class AuthNotifier extends Notifier<AuthState> {
     _repository = sl<AuthRepository>();
     _credentials = sl<CredentialsManager>();
     _sessionManager = sl<SessionManager>();
+    _envManager = sl<EnvManager>();
     _talker = sl<Talker>();
     _checkSession();
     return const AuthState.unauthenticated();
@@ -37,33 +41,50 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  /// Logs the user in against [env]. The env is applied to [EnvManager]
+  /// BEFORE the credentials are saved so that the verification request
+  /// already targets the right host. On failure the previous env is
+  /// restored so a failed testnet login doesn't leave the app pointing
+  /// at testnet.
   Future<void> login({
     required String apiKey,
     required String apiSecret,
+    required BinanceEnv env,
   }) async {
     state = const AuthState.authenticating();
+
+    final previousEnv = _envManager.current.env;
+    _envManager.set(env);
+
     final result = await _credentials
-        .saveCredentials(apiKey: apiKey, apiSecret: apiSecret)
+        .saveCredentials(apiKey: apiKey, apiSecret: apiSecret, env: env)
         .flatMap((_) => _repository.verifyCredentials())
         .run();
+
     state = result.fold(
       (err) {
         _talker.error('Login failed', err);
         // Fire-and-forget cleanup — we don't want to block the UI on a
         // secure-storage delete and we already have the user-facing error.
         _credentials.clearCredentials().run();
+        // Revert env so a failed testnet login doesn't leave the app
+        // pointing at testnet (EC-11 — env switches require logout).
+        _envManager.set(previousEnv);
         return _stateFromError(err);
       },
       (_) {
-        _talker.info('Login succeeded.');
+        _talker.info('Login succeeded — env=${env.name}');
         return const AuthState.authenticated();
       },
     );
   }
 
   Future<void> logout() async {
-    await _sessionManager.invalidateSession().run();
-    _talker.info('Logged out.');
+    final result = await _sessionManager.logout().run();
+    result.match(
+      (err) => _talker.error('Logout failed', err),
+      (_) => _talker.info('Logged out.'),
+    );
     state = const AuthState.unauthenticated();
   }
 

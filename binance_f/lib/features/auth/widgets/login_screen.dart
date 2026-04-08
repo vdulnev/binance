@@ -2,6 +2,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/di/service_locator.dart';
+import '../../../core/env/env.dart';
+import '../../../core/env/env_manager.dart';
 import '../../../core/router/app_router.dart';
 import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
@@ -19,6 +22,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _apiKeyController = TextEditingController();
   final _apiSecretController = TextEditingController();
   bool _obscureSecret = true;
+  // Default to whatever env the app is currently configured with — that's
+  // either the persisted env (post-restore) or the --dart-define fallback.
+  late BinanceEnv _selectedEnv = sl<EnvManager>().current.env;
 
   @override
   void dispose() {
@@ -68,7 +74,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     'Enter your API credentials',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 32),
+                  _EnvPicker(
+                    selected: _selectedEnv,
+                    enabled: !isLoading,
+                    onChanged: (env) => setState(() => _selectedEnv = env),
+                  ),
+                  const SizedBox(height: 24),
                   TextFormField(
                     controller: _apiKeyController,
                     decoration: const InputDecoration(
@@ -135,6 +147,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         .login(
           apiKey: _apiKeyController.text.trim(),
           apiSecret: _apiSecretController.text.trim(),
+          env: _selectedEnv,
         );
+  }
+}
+
+class _EnvPicker extends StatelessWidget {
+  const _EnvPicker({
+    required this.selected,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final BinanceEnv selected;
+  final bool enabled;
+  final ValueChanged<BinanceEnv> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SegmentedButton<BinanceEnv>(
+      segments: const [
+        ButtonSegment<BinanceEnv>(
+          value: BinanceEnv.mainnet,
+          label: Text('Mainnet'),
+          icon: Icon(Icons.public),
+        ),
+        ButtonSegment<BinanceEnv>(
+          value: BinanceEnv.testnet,
+          label: Text('Testnet'),
+          icon: Icon(Icons.science_outlined),
+        ),
+      ],
+      selected: <BinanceEnv>{selected},
+      onSelectionChanged: enabled ? (set) => onChanged(set.first) : null,
+    );
   }
 }

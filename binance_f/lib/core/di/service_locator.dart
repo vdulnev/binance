@@ -4,14 +4,19 @@ import 'package:talker/talker.dart';
 
 import '../../features/auth/data/auth_repository.dart';
 import '../api/binance_client.dart';
+import '../api/signing_interceptor.dart';
 import '../auth/credentials_manager.dart';
 import '../auth/session_manager.dart';
+import '../env/env_manager.dart';
 import '../logging/app_talker.dart';
 import '../router/app_router.dart';
 import '../router/auth_guard.dart';
 import '../security/secure_storage_service.dart';
 
 final sl = GetIt.instance;
+
+const kSpot = 'spot';
+const kFutures = 'futures';
 
 Future<void> initServiceLocator() async {
   // Logging
@@ -22,25 +27,64 @@ Future<void> initServiceLocator() async {
     FlutterSecureStorageService.new,
   );
 
-  // Auth
+  // Auth — credentials manager comes before EnvManager so the latter can
+  // be constructed without depending on Dio (avoids a cycle).
   sl.registerLazySingleton<CredentialsManager>(
     () => CredentialsManager(storage: sl<SecureStorageService>()),
   );
-  sl.registerLazySingleton<SessionManager>(
-    () => SessionManager(credentialsManager: sl<CredentialsManager>()),
+
+  // Single shared SigningInterceptor across spot + futures so the lazy
+  // /api/v3/time offset is computed once for the whole session.
+  sl.registerLazySingleton<SigningInterceptor>(
+    () => SigningInterceptor(storage: sl<SecureStorageService>()),
   );
 
-  // API
-  sl.registerLazySingleton<Dio>(
-    () => createBinanceClient(
+  // EnvManager owns the active env and the spot/futures Dio pair.
+  // It rebuilds both Dios on `set()` and disposes the old ones.
+  sl.registerLazySingleton<EnvManager>(
+    () => EnvManager(
       talker: sl<Talker>(),
-      storage: sl<SecureStorageService>(),
+      dioFactory: (env, market) => createBinanceClient(
+        env: env,
+        market: market,
+        signing: sl<SigningInterceptor>(),
+        talker: sl<Talker>(),
+      ),
     ),
   );
 
-  // Repositories
+  // Two named Dio facades over EnvManager. Repositories ask get_it for the
+  // one they need; the underlying Dio is swapped out by EnvManager when env
+  // changes, but get_it keeps handing back the live reference because we
+  // resolve `.spot` / `.futures` lazily on every read.
+  //
+  // get_it can't natively forward "give me the current spot Dio" because
+  // factory registrations cache by instance identity. Use a factory so the
+  // lookup runs through EnvManager every time.
+  sl.registerFactory<Dio>(() => sl<EnvManager>().spot, instanceName: kSpot);
+  sl.registerFactory<Dio>(
+    () => sl<EnvManager>().futures,
+    instanceName: kFutures,
+  );
+
+  // Session manager depends on EnvManager so it can swap env on restore /
+  // reset on logout.
+  sl.registerLazySingleton<SessionManager>(
+    () => SessionManager(
+      credentialsManager: sl<CredentialsManager>(),
+      envManager: sl<EnvManager>(),
+      talker: sl<Talker>(),
+    ),
+  );
+
+  // Repositories — pass a `Dio` provider, not a captured Dio, so an env
+  // switch (which rebuilds the Dio inside EnvManager) is observed without
+  // having to re-register the repository.
   sl.registerLazySingleton<AuthRepository>(
-    () => BinanceAuthRepository(dio: sl<Dio>()),
+    () => BinanceAuthRepository(
+      dio: () => sl<Dio>(instanceName: kSpot),
+      sessionManager: sl<SessionManager>(),
+    ),
   );
 
   // Router
