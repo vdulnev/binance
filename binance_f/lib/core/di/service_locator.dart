@@ -3,15 +3,19 @@ import 'package:get_it/get_it.dart';
 import 'package:talker/talker.dart';
 
 import '../../features/auth/data/auth_repository.dart';
+import '../../features/portfolio/data/portfolio_repository.dart';
 import '../api/binance_client.dart';
 import '../api/signing_interceptor.dart';
 import '../auth/credentials_manager.dart';
 import '../auth/session_manager.dart';
+import '../db/app_database.dart';
+import '../db/portfolio_cache.dart';
 import '../env/env_manager.dart';
 import '../logging/app_talker.dart';
 import '../router/app_router.dart';
 import '../router/auth_guard.dart';
 import '../security/secure_storage_service.dart';
+import '../ws/user_data_stream.dart';
 
 final sl = GetIt.instance;
 
@@ -67,13 +71,37 @@ Future<void> initServiceLocator() async {
     instanceName: kFutures,
   );
 
+  // Drift database + portfolio cache. `AppDatabase` is opened lazily on
+  // first access via get_it — tests override it with an in-memory
+  // executor via `sl.registerSingleton<AppDatabase>(...)` in setUp.
+  sl.registerLazySingleton<AppDatabase>(AppDatabase.new);
+  sl.registerLazySingleton<PortfolioCache>(
+    () => PortfolioCache(database: sl<AppDatabase>()),
+  );
+
+  // User data WebSocket stream (spot + futures listen keys). Wired here
+  // so `SessionManager.logout` can `.stopAll()` it as part of full wipe.
+  sl.registerLazySingleton<UserDataStream>(
+    () => UserDataStream(
+      listenKeyClient: BinanceListenKeyClient(
+        spot: () => sl<Dio>(instanceName: kSpot),
+        futures: () => sl<Dio>(instanceName: kFutures),
+      ),
+      envManager: sl<EnvManager>(),
+      talker: sl<Talker>(),
+    ),
+  );
+
   // Session manager depends on EnvManager so it can swap env on restore /
-  // reset on logout.
+  // reset on logout. It also takes the UserDataStream + PortfolioCache
+  // so logout can tear down live subscriptions and wipe cached data.
   sl.registerLazySingleton<SessionManager>(
     () => SessionManager(
       credentialsManager: sl<CredentialsManager>(),
       envManager: sl<EnvManager>(),
       talker: sl<Talker>(),
+      userDataStream: sl<UserDataStream>(),
+      portfolioCache: sl<PortfolioCache>(),
     ),
   );
 
@@ -83,6 +111,14 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<AuthRepository>(
     () => BinanceAuthRepository(
       dio: () => sl<Dio>(instanceName: kSpot),
+      sessionManager: sl<SessionManager>(),
+    ),
+  );
+
+  sl.registerLazySingleton<PortfolioRepository>(
+    () => BinancePortfolioRepository(
+      spotDio: () => sl<Dio>(instanceName: kSpot),
+      futuresDio: () => sl<Dio>(instanceName: kFutures),
       sessionManager: sl<SessionManager>(),
     ),
   );

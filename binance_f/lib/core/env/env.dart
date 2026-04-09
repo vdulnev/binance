@@ -40,7 +40,7 @@ class Env {
     env: BinanceEnv.testnet,
     restBaseUrl: 'https://testnet.binance.vision',
     futuresRestBaseUrl: 'https://testnet.binancefuture.com',
-    wsBaseUrl: 'wss://testnet.binance.vision',
+    wsBaseUrl: 'wss://stream.testnet.binance.vision',
     futuresWsBaseUrl: 'wss://stream.binancefuture.com',
   );
 

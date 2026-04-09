@@ -8,10 +8,12 @@ const _kApiKey = 'binance_api_key';
 const _kApiSecret = 'binance_api_secret';
 const _kRetryFlag = '__binance_signing_retried__';
 
-/// Signs Binance USER_DATA / TRADE requests with HMAC-SHA256, attaches the
-/// `X-MBX-APIKEY` header, and adds a `timestamp` synchronized to Binance
-/// server time. On `-1021` clock-skew errors, invalidates the offset and
-/// retries the request exactly once.
+/// Signs Binance USER_DATA / TRADE / USER_STREAM requests with HMAC-SHA256,
+/// attaches the `X-MBX-APIKEY` header, and adds a `timestamp` synchronized to
+/// Binance server time. On `-1021` clock-skew errors, invalidates the offset
+/// and retries the request exactly once.
+///
+/// Public (NONE-security) endpoints are passed through unsigned.
 class SigningInterceptor extends Interceptor {
   SigningInterceptor({
     required SecureStorageService storage,
@@ -26,16 +28,68 @@ class SigningInterceptor extends Interceptor {
   int _timeOffset = 0;
   bool _timeSynced = false;
 
+  /// Paths that require signing (USER_DATA, TRADE, USER_STREAM).
+  /// Everything else is NONE-security and must not be signed.
+  static const _signedPaths = <String>{
+    // Spot USER_DATA
+    '/api/v3/account',
+    '/api/v3/openOrders',
+    '/api/v3/allOrders',
+    '/api/v3/myTrades',
+    // Spot TRADE
+    '/api/v3/order',
+    '/api/v3/order/oco',
+    '/api/v3/order/test',
+    // Spot USER_STREAM
+    '/api/v3/userDataStream',
+    // Futures USER_DATA
+    '/fapi/v2/account',
+    '/fapi/v1/allOrders',
+    '/fapi/v1/openOrders',
+    '/fapi/v1/userTrades',
+    '/fapi/v1/positionRisk',
+    // Futures TRADE
+    '/fapi/v1/order',
+    // Futures USER_STREAM
+    '/fapi/v1/listenKey',
+    // Capital (SAPI)
+    '/sapi/v1/capital/deposit/hisrec',
+    '/sapi/v1/capital/withdraw/history',
+    '/sapi/v1/capital/deposit/address',
+  };
+
+  /// Returns true when the request path matches a signed endpoint.
+  bool _requiresSigning(String path) => _signedPaths.contains(path);
+
   @override
   Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
+    if (!_requiresSigning(options.path)) {
+      // Public (NONE-security) endpoint — pass through without any signing
+      // headers. Do NOT attach X-MBX-APIKEY here: some Binance endpoints
+      // interpret its presence as intent to sign and then reject for missing
+      // signature (-1102).
+      handler.next(options);
+      return;
+    }
+
     final apiKey = await _storage.read(key: _kApiKey);
     final apiSecret = await _storage.read(key: _kApiSecret);
 
     if (apiKey == null || apiSecret == null) {
-      handler.next(options);
+      // Signed endpoint but no credentials (e.g. post-logout rebuild).
+      // Reject immediately — sending unsigned would trigger -1102.
+      handler.reject(
+        DioException(
+          requestOptions: options,
+          type: DioExceptionType.cancel,
+          error: const AppException.auth(
+            message: 'Not authenticated.',
+          ),
+        ),
+      );
       return;
     }
 

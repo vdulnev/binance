@@ -2,8 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:talker/talker.dart';
 
+import '../db/portfolio_cache.dart';
 import '../env/env_manager.dart';
 import '../models/app_exception.dart';
+import '../ws/user_data_stream.dart';
 import 'credentials_manager.dart';
 
 /// Owns the lifecycle of a logged-in session.
@@ -25,13 +27,19 @@ class SessionManager {
     required CredentialsManager credentialsManager,
     required EnvManager envManager,
     required Talker talker,
+    UserDataStream? userDataStream,
+    PortfolioCache? portfolioCache,
   }) : _credentials = credentialsManager,
        _envManager = envManager,
-       _talker = talker;
+       _talker = talker,
+       _userDataStream = userDataStream,
+       _portfolioCache = portfolioCache;
 
   final CredentialsManager _credentials;
   final EnvManager _envManager;
   final Talker _talker;
+  final UserDataStream? _userDataStream;
+  final PortfolioCache? _portfolioCache;
 
   final Set<CancelToken> _cancelTokens = <CancelToken>{};
 
@@ -77,13 +85,13 @@ class SessionManager {
   /// get stuck mid-logout because of a stray storage error.
   ///
   /// 1. Cancel all in-flight Dio requests on every registered token.
-  /// 2. Tear down WebSocket subscriptions (Phase 4 hook — no-op today).
+  /// 2. Tear down the user data WebSockets (DELETE listen keys +
+  ///    disconnect spot + futures sockets).
   /// 3. `clearCredentials()` — wipes key, secret, env.
   /// 4. Reset [EnvManager] to the `--dart-define` fallback so the next
   ///    launch picks the developer-expected env.
-  /// 5. Settings (theme + quote asset) are intentionally preserved per
-  ///    spec §4 "Logout". Drift isn't wired yet, so this is a no-op for
-  ///    now — keep the comment so Phase 8 doesn't accidentally wipe it.
+  /// 5. Wipe the `cached_portfolio` Drift table. Settings (theme + quote
+  ///    asset) are intentionally preserved per spec §4.
   TaskEither<AppException, Unit> logout() =>
       TaskEither<AppException, Unit>(() async {
         _talker.info('SessionManager.logout: starting full wipe');
@@ -95,8 +103,13 @@ class SessionManager {
         }
         _cancelTokens.clear();
 
-        // 2. WebSocket teardown — Phase 4 hook.
-        // TODO(phase4): _wsClient?.closeAll();
+        // 2. WebSocket teardown — stops listen-key refresh timer,
+        //    DELETEs both listen keys, disconnects both sockets.
+        final userStream = _userDataStream;
+        if (userStream != null) {
+          await userStream.stopAll();
+          _talker.info('logout: user data streams stopped');
+        }
 
         // 3. Wipe credentials + env from secure storage.
         final clearResult = await _credentials.clearCredentials().run();
@@ -108,8 +121,17 @@ class SessionManager {
         // 4. Reset env to the dart-define fallback.
         _envManager.reset();
 
-        // 5. Drift wipe goes here once Phase 3 lands cached_portfolio /
-        //    Phase 8 lands cached_orders. Settings table must NOT be wiped.
+        // 5. Wipe cached portfolio. Best-effort — failures are logged
+        //    but don't abort logout. Settings table (theme + quote
+        //    asset) is preserved by design.
+        final cache = _portfolioCache;
+        if (cache != null) {
+          final cacheResult = await cache.clear().run();
+          cacheResult.match(
+            (err) => _talker.error('logout: portfolio cache clear failed', err),
+            (_) => _talker.info('logout: portfolio cache cleared'),
+          );
+        }
 
         _talker.info('SessionManager.logout: complete');
         return right(unit);

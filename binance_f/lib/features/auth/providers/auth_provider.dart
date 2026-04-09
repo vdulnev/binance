@@ -85,6 +85,10 @@ class AuthNotifier extends Notifier<AuthState> {
       (err) => _talker.error('Logout failed', err),
       (_) => _talker.info('Logged out.'),
     );
+    // Don't ref.invalidate(portfolioProvider) here — credentials are
+    // already wiped, so a rebuild would just fail with "Not authenticated".
+    // The provider will be disposed when the home screen unmounts (auth
+    // guard navigates to LoginRoute) and rebuilt fresh on the next login.
     state = const AuthState.unauthenticated();
   }
 
