@@ -7,6 +7,12 @@ import 'package:binance_f/core/models/app_exception.dart';
 import 'package:binance_f/features/auth/providers/auth_provider.dart';
 import 'package:binance_f/features/auth/providers/auth_state.dart';
 import 'package:binance_f/features/auth/widgets/home_screen.dart';
+import 'package:binance_f/features/favorites/data/models/favorite_symbol.dart';
+import 'package:binance_f/features/favorites/providers/favorites_provider.dart';
+import 'package:binance_f/features/markets/data/models/symbol_info.dart';
+import 'package:binance_f/features/markets/data/models/ticker_24h.dart';
+import 'package:binance_f/features/markets/providers/exchange_info_provider.dart';
+import 'package:binance_f/features/markets/providers/tickers_provider.dart';
 import 'package:binance_f/features/portfolio/data/models/futures_account_snapshot.dart';
 import 'package:binance_f/features/portfolio/data/models/futures_asset_balance.dart';
 import 'package:binance_f/features/portfolio/data/models/futures_position.dart';
@@ -59,16 +65,13 @@ class _FakePortfolioNotifier extends AsyncNotifier<PortfolioSnapshot>
 
   @override
   Future<PortfolioSnapshot> build() async {
-    // `await` a microtask before returning/throwing so Riverpod lands
-    // the element in `AsyncData` / `AsyncError` instead of staying in
-    // `AsyncLoading(retrying: true)`. That's what the widget's
-    // `.when(data:, error:, loading:)` switch actually keys off.
-    await Future<void>.microtask(() {});
-    return _initial.when(
-      data: (v) => v,
-      error: Error.throwWithStackTrace,
-      loading: () => Completer<PortfolioSnapshot>().future,
-    );
+    // Directly set the state so the widget immediately sees the
+    // seeded value (data / error / loading) without relying on
+    // future-completion timing that differs across FakeAsync zones.
+    state = _initial;
+    // Return a never-completing future so Riverpod doesn't overwrite
+    // the state we just set.
+    return Completer<PortfolioSnapshot>().future;
   }
 
   @override
@@ -78,6 +81,35 @@ class _FakePortfolioNotifier extends AsyncNotifier<PortfolioSnapshot>
 
   @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Stub favorites notifier so MarketsTab doesn't hit DI.
+class _FakeFavoritesNotifier extends AsyncNotifier<List<FavoriteSymbol>>
+    implements FavoritesNotifier {
+  @override
+  Future<List<FavoriteSymbol>> build() async => [];
+
+  @override
+  Future<void> add(String symbol, String market) async {}
+
+  @override
+  Future<void> remove(String symbol, String market) async {}
+
+  @override
+  Future<void> reorder(List<FavoriteSymbol> ordered) async {}
+
+  @override
+  Future<bool> isFavorite(String symbol, String market) async => false;
+}
+
+/// Stub tickers notifier so MarketsTab doesn't hit DI.
+class _FakeTickersNotifier extends AsyncNotifier<Map<String, Ticker24h>>
+    implements TickersNotifier {
+  @override
+  Future<Map<String, Ticker24h>> build() async => {};
+
+  @override
+  Future<void> refresh() async {}
 }
 
 Decimal d(String v) => Decimal.parse(v);
@@ -152,16 +184,28 @@ void main() {
         overrides: [
           authProvider.overrideWith(() => auth),
           portfolioProvider.overrideWith(() => portfolio),
+          // Phase 4: MarketsTab is now in the IndexedStack and builds
+          // even when not visible. Override its providers so they don't
+          // hit the DI container.
+          favoritesProvider.overrideWith(_FakeFavoritesNotifier.new),
+          tickersProvider.overrideWith2((_) => _FakeTickersNotifier()),
+          exchangeInfoProvider.overrideWith(
+            (ref, market) async => <SymbolInfo>[],
+          ),
         ],
         child: const MaterialApp(home: HomeScreen()),
       ),
     );
-    // Run microtasks in a real async zone so the fake notifier's
+    // Run microtasks in a real async zone so the fake notifiers'
     // `await Future.microtask` resolves, then pump to rebuild.
-    await tester.runAsync(() async {
-      await Future<void>.delayed(const Duration(milliseconds: 5));
-    });
-    await tester.pump();
+    // Multiple rounds are needed because Riverpod processes async
+    // state transitions across separate microtask ticks.
+    for (var i = 0; i < 3; i++) {
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      });
+      await tester.pump();
+    }
     return (auth: auth, portfolio: portfolio);
   }
 
@@ -178,10 +222,7 @@ void main() {
     });
 
     testWidgets('renders portfolio body on data', (tester) async {
-      await pumpHome(
-        tester,
-        portfolioState: AsyncData(buildSnapshot()),
-      );
+      await pumpHome(tester, portfolioState: AsyncData(buildSnapshot()));
 
       // Header shows the total value.
       expect(find.textContaining('46100'), findsOneWidget);
@@ -203,17 +244,13 @@ void main() {
     testWidgets(
       'error view renders the AppException.displayMessage and a Retry button',
       (tester) async {
-        final handles = await pumpHome(
+        await pumpHome(
           tester,
           portfolioState: AsyncError<PortfolioSnapshot>(
             const AppException.network(),
             StackTrace.empty,
           ),
         );
-        // Allow the async error to propagate through Riverpod.
-        // ignore: avoid_print
-        print(handles);
-        debugDumpApp();
 
         // The error text is composed from
         // `NetworkException.displayMessage`. It contains a distinctive

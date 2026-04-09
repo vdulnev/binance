@@ -69,8 +69,7 @@ class BinancePortfolioRepository implements PortfolioRepository {
 
       final data = response.data ?? const <String, dynamic>{};
       final rawBalances =
-          (data['balances'] as List?)?.cast<Map<String, dynamic>>() ??
-          const [];
+          (data['balances'] as List?)?.cast<Map<String, dynamic>>() ?? const [];
 
       final parsed = rawBalances
           .map(SpotBalance.fromJson)
@@ -126,8 +125,7 @@ class BinancePortfolioRepository implements PortfolioRepository {
           .where((p) => p.isOpen)
           .toList(growable: false);
 
-      Decimal dec(String key) =>
-          Decimal.parse((data[key] ?? '0').toString());
+      Decimal dec(String key) => Decimal.parse((data[key] ?? '0').toString());
 
       return FuturesAccountSnapshot(
         fetchedAt: DateTime.now().toUtc(),

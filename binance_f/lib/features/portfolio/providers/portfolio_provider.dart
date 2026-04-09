@@ -155,10 +155,7 @@ class PortfolioNotifier extends AsyncNotifier<PortfolioSnapshot> {
       // Futures is best-effort: Auth/permission errors degrade to empty
       // snapshot (EC-2) rather than killing the entire portfolio load.
       final futures = futuresEither.getOrElse((err) {
-        _talker.warning(
-          'Futures account unavailable — showing spot only',
-          err,
-        );
+        _talker.warning('Futures account unavailable — showing spot only', err);
         return FuturesAccountSnapshot.empty();
       });
 

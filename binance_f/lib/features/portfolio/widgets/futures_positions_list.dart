@@ -34,9 +34,7 @@ class FuturesPositionsList extends StatelessWidget {
               ),
             )
           : Column(
-              children: [
-                for (final p in positions) _PositionRow(position: p),
-              ],
+              children: [for (final p in positions) _PositionRow(position: p)],
             ),
     );
   }

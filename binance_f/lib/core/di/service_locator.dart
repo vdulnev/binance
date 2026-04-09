@@ -3,6 +3,10 @@ import 'package:get_it/get_it.dart';
 import 'package:talker/talker.dart';
 
 import '../../features/auth/data/auth_repository.dart';
+import '../../features/favorites/data/favorites_repository.dart';
+import '../../features/markets/data/market_ws_manager.dart';
+import '../../features/markets/data/markets_repository.dart';
+import '../../features/orderbook/data/orderbook_repository.dart';
 import '../../features/portfolio/data/portfolio_repository.dart';
 import '../api/binance_client.dart';
 import '../api/signing_interceptor.dart';
@@ -79,6 +83,12 @@ Future<void> initServiceLocator() async {
     () => PortfolioCache(database: sl<AppDatabase>()),
   );
 
+  // Market WebSocket manager — per-symbol WS streams (ticker, depth,
+  // trade, kline). Logout calls `unsubscribeAll()` via SessionManager.
+  sl.registerLazySingleton<MarketWsManager>(
+    () => MarketWsManager(envManager: sl<EnvManager>(), talker: sl<Talker>()),
+  );
+
   // User data WebSocket stream (spot + futures listen keys). Wired here
   // so `SessionManager.logout` can `.stopAll()` it as part of full wipe.
   sl.registerLazySingleton<UserDataStream>(
@@ -93,8 +103,9 @@ Future<void> initServiceLocator() async {
   );
 
   // Session manager depends on EnvManager so it can swap env on restore /
-  // reset on logout. It also takes the UserDataStream + PortfolioCache
-  // so logout can tear down live subscriptions and wipe cached data.
+  // reset on logout. It also takes the UserDataStream + PortfolioCache +
+  // MarketWsManager so logout can tear down live subscriptions and wipe
+  // cached data.
   sl.registerLazySingleton<SessionManager>(
     () => SessionManager(
       credentialsManager: sl<CredentialsManager>(),
@@ -102,6 +113,8 @@ Future<void> initServiceLocator() async {
       talker: sl<Talker>(),
       userDataStream: sl<UserDataStream>(),
       portfolioCache: sl<PortfolioCache>(),
+      marketWsManager: sl<MarketWsManager>(),
+      favoritesRepository: sl<FavoritesRepository>(),
     ),
   );
 
@@ -121,6 +134,23 @@ Future<void> initServiceLocator() async {
       futuresDio: () => sl<Dio>(instanceName: kFutures),
       sessionManager: sl<SessionManager>(),
     ),
+  );
+
+  sl.registerLazySingleton<MarketsRepository>(
+    () => BinanceMarketsRepository(
+      spotDio: () => sl<Dio>(instanceName: kSpot),
+      futuresDio: () => sl<Dio>(instanceName: kFutures),
+      database: sl<AppDatabase>(),
+    ),
+  );
+
+  sl.registerLazySingleton<FavoritesRepository>(
+    () => DriftFavoritesRepository(database: sl<AppDatabase>()),
+  );
+
+  sl.registerLazySingleton<OrderBookRepository>(
+    () =>
+        BinanceOrderBookRepository(spotDio: () => sl<Dio>(instanceName: kSpot)),
   );
 
   // Router

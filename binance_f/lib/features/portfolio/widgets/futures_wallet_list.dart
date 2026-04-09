@@ -28,9 +28,7 @@ class FuturesWalletList extends StatelessWidget {
                 ),
               ),
             )
-          : Column(
-              children: [for (final a in assets) _AssetRow(asset: a)],
-            ),
+          : Column(children: [for (final a in assets) _AssetRow(asset: a)]),
     );
   }
 }

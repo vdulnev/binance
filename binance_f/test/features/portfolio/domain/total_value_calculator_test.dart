@@ -44,18 +44,21 @@ void main() {
       expect(result.skippedAssets, isEmpty);
     });
 
-    test('inverse pair lookup: USDC when only USDCUSDT missing uses quote inverse', () {
-      // Suppose the API only lists `USDTUSDC` for some reason — we should
-      // invert: 10 USDC @ USDTUSDC=0.5 → 10 / 0.5 = 20 USDT.
-      final result = computeTotalInQuote(
-        spotBalances: [spot('USDC', '10')],
-        futuresAssets: const [],
-        prices: {'USDTUSDC': d('0.5')},
-      );
+    test(
+      'inverse pair lookup: USDC when only USDCUSDT missing uses quote inverse',
+      () {
+        // Suppose the API only lists `USDTUSDC` for some reason — we should
+        // invert: 10 USDC @ USDTUSDC=0.5 → 10 / 0.5 = 20 USDT.
+        final result = computeTotalInQuote(
+          spotBalances: [spot('USDC', '10')],
+          futuresAssets: const [],
+          prices: {'USDTUSDC': d('0.5')},
+        );
 
-      expect(result.total, d('20'));
-      expect(result.skippedAssets, isEmpty);
-    });
+        expect(result.total, d('20'));
+        expect(result.skippedAssets, isEmpty);
+      },
+    );
 
     test('missing symbol: asset is skipped, total still produced', () {
       final result = computeTotalInQuote(

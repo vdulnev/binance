@@ -53,8 +53,7 @@ class _FakeChannel implements WebSocketChannel {
   Future<void> get ready => Future.value();
 
   @override
-  dynamic noSuchMethod(Invocation invocation) =>
-      super.noSuchMethod(invocation);
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _FakeSink implements WebSocketSink {
@@ -107,39 +106,36 @@ void main() {
       expect(received.first['e'], 'ping');
     });
 
-    test(
-      'backoff schedule is 1s, 2s, 4s, 8s, 16s, capped at 30s',
-      () async {
-        final channel = _FakeChannel();
-        final states = <WsState>[];
-        var attempts = 0;
+    test('backoff schedule is 1s, 2s, 4s, 8s, 16s, capped at 30s', () async {
+      final channel = _FakeChannel();
+      final states = <WsState>[];
+      var attempts = 0;
 
-        final client = WsClient(
-          url: Uri.parse('wss://example.com/ws'),
-          talker: Talker(),
-          channelFactory: (_) {
-            attempts++;
-            // Fail immediately on every attempt.
-            throw StateError('boom');
-          },
-          initialBackoff: const Duration(milliseconds: 1),
-          maxBackoff: const Duration(milliseconds: 30),
-          stableThreshold: const Duration(seconds: 10),
-        );
-        addTearDown(client.dispose);
-        client.state.listen(states.add);
+      final client = WsClient(
+        url: Uri.parse('wss://example.com/ws'),
+        talker: Talker(),
+        channelFactory: (_) {
+          attempts++;
+          // Fail immediately on every attempt.
+          throw StateError('boom');
+        },
+        initialBackoff: const Duration(milliseconds: 1),
+        maxBackoff: const Duration(milliseconds: 30),
+        stableThreshold: const Duration(seconds: 10),
+      );
+      addTearDown(client.dispose);
+      client.state.listen(states.add);
 
-        await client.connect();
+      await client.connect();
 
-        // Let a few reconnect cycles run. Initial attempt + retries.
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+      // Let a few reconnect cycles run. Initial attempt + retries.
+      await Future<void>.delayed(const Duration(milliseconds: 200));
 
-        expect(attempts, greaterThan(3));
-        expect(states.contains(WsState.reconnecting), isTrue);
+      expect(attempts, greaterThan(3));
+      expect(states.contains(WsState.reconnecting), isTrue);
 
-        channel.closed; // touch to silence analyzer unused warning
-      },
-    );
+      channel.closed; // touch to silence analyzer unused warning
+    });
 
     test(
       'reconnect on stream close (simulated drop) fires another connect',

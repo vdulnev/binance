@@ -85,9 +85,7 @@ class SigningInterceptor extends Interceptor {
         DioException(
           requestOptions: options,
           type: DioExceptionType.cancel,
-          error: const AppException.auth(
-            message: 'Not authenticated.',
-          ),
+          error: const AppException.auth(message: 'Not authenticated.'),
         ),
       );
       return;

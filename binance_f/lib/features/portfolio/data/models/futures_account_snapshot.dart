@@ -37,9 +37,7 @@ sealed class FuturesAccountSnapshot with _$FuturesAccountSnapshot {
   );
 
   bool get isEmpty =>
-      assets.isEmpty &&
-      positions.isEmpty &&
-      totalWalletBalance == Decimal.zero;
+      assets.isEmpty && positions.isEmpty && totalWalletBalance == Decimal.zero;
 
   factory FuturesAccountSnapshot.fromJson(Map<String, dynamic> json) =>
       _$FuturesAccountSnapshotFromJson(json);

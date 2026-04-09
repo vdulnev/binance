@@ -41,3 +41,55 @@ class LoginRoute extends PageRouteInfo<void> {
     },
   );
 }
+
+/// generated route for
+/// [SymbolDetailScreen]
+class SymbolDetailRoute extends PageRouteInfo<SymbolDetailRouteArgs> {
+  SymbolDetailRoute({
+    Key? key,
+    required String symbol,
+    List<PageRouteInfo>? children,
+  }) : super(
+         SymbolDetailRoute.name,
+         args: SymbolDetailRouteArgs(key: key, symbol: symbol),
+         rawPathParams: {'symbol': symbol},
+         initialChildren: children,
+       );
+
+  static const String name = 'SymbolDetailRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final pathParams = data.inheritedPathParams;
+      final args = data.argsAs<SymbolDetailRouteArgs>(
+        orElse: () =>
+            SymbolDetailRouteArgs(symbol: pathParams.getString('symbol')),
+      );
+      return SymbolDetailScreen(key: args.key, symbol: args.symbol);
+    },
+  );
+}
+
+class SymbolDetailRouteArgs {
+  const SymbolDetailRouteArgs({this.key, required this.symbol});
+
+  final Key? key;
+
+  final String symbol;
+
+  @override
+  String toString() {
+    return 'SymbolDetailRouteArgs{key: $key, symbol: $symbol}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! SymbolDetailRouteArgs) return false;
+    return key == other.key && symbol == other.symbol;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ symbol.hashCode;
+}

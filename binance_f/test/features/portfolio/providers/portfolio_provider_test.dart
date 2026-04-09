@@ -59,8 +59,7 @@ class _FakeUserDataStream implements UserDataStream {
   bool get futuresActive => false;
 
   @override
-  dynamic noSuchMethod(Invocation invocation) =>
-      super.noSuchMethod(invocation);
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 Decimal d(String v) => Decimal.parse(v);
@@ -153,9 +152,9 @@ void main() {
       when(
         () => repo.getFuturesAccount(),
       ).thenReturn(TaskEither.right(sampleFutures()));
-      when(() => repo.getAllPrices()).thenReturn(
-        TaskEither.right(<String, Decimal>{'BTCUSDT': d('30000')}),
-      );
+      when(
+        () => repo.getAllPrices(),
+      ).thenReturn(TaskEither.right(<String, Decimal>{'BTCUSDT': d('30000')}));
 
       final snap = await container.read(portfolioProvider.future);
 
@@ -172,9 +171,7 @@ void main() {
     test(
       'network failure with cached snapshot → AsyncData(stale: true)',
       () async {
-        when(
-          () => cache.load(),
-        ).thenReturn(TaskEither.right(sampleSnapshot()));
+        when(() => cache.load()).thenReturn(TaskEither.right(sampleSnapshot()));
         when(() => repo.getSpotAccount()).thenReturn(
           TaskEither.left(const AppException.network(message: 'offline')),
         );
@@ -194,54 +191,46 @@ void main() {
       },
     );
 
-    test(
-      'network failure WITHOUT cached snapshot → AsyncError',
-      () async {
-        when(() => cache.load()).thenReturn(TaskEither.right(null));
-        when(() => repo.getSpotAccount()).thenReturn(
-          TaskEither.left(const AppException.network(message: 'offline')),
-        );
-        when(() => repo.getFuturesAccount()).thenReturn(
-          TaskEither.left(const AppException.network(message: 'offline')),
-        );
-        when(() => repo.getAllPrices()).thenReturn(
-          TaskEither.left(const AppException.network(message: 'offline')),
-        );
+    test('network failure WITHOUT cached snapshot → AsyncError', () async {
+      when(() => cache.load()).thenReturn(TaskEither.right(null));
+      when(() => repo.getSpotAccount()).thenReturn(
+        TaskEither.left(const AppException.network(message: 'offline')),
+      );
+      when(() => repo.getFuturesAccount()).thenReturn(
+        TaskEither.left(const AppException.network(message: 'offline')),
+      );
+      when(() => repo.getAllPrices()).thenReturn(
+        TaskEither.left(const AppException.network(message: 'offline')),
+      );
 
-        // Trigger the build and let it settle.
-        container.listen(portfolioProvider, (_, _) {});
-        await Future<void>.delayed(const Duration(milliseconds: 10));
+      // Trigger the build and let it settle.
+      container.listen(portfolioProvider, (_, _) {});
+      await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        final state = container.read(portfolioProvider);
-        expect(state.hasError, isTrue);
-        expect(state.error, isA<NetworkException>());
-      },
-    );
+      final state = container.read(portfolioProvider);
+      expect(state.hasError, isTrue);
+      expect(state.error, isA<NetworkException>());
+    });
 
-    test(
-      'non-network error always throws even if cache exists',
-      () async {
-        when(
-          () => cache.load(),
-        ).thenReturn(TaskEither.right(sampleSnapshot()));
-        when(() => repo.getSpotAccount()).thenReturn(
-          TaskEither.left(const AppException.auth(message: 'bad key')),
-        );
-        when(
-          () => repo.getFuturesAccount(),
-        ).thenReturn(TaskEither.right(sampleFutures()));
-        when(() => repo.getAllPrices()).thenReturn(
-          TaskEither.right(<String, Decimal>{'BTCUSDT': d('30000')}),
-        );
+    test('non-network error always throws even if cache exists', () async {
+      when(() => cache.load()).thenReturn(TaskEither.right(sampleSnapshot()));
+      when(() => repo.getSpotAccount()).thenReturn(
+        TaskEither.left(const AppException.auth(message: 'bad key')),
+      );
+      when(
+        () => repo.getFuturesAccount(),
+      ).thenReturn(TaskEither.right(sampleFutures()));
+      when(
+        () => repo.getAllPrices(),
+      ).thenReturn(TaskEither.right(<String, Decimal>{'BTCUSDT': d('30000')}));
 
-        container.listen(portfolioProvider, (_, _) {});
-        await Future<void>.delayed(const Duration(milliseconds: 10));
+      container.listen(portfolioProvider, (_, _) {});
+      await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        final state = container.read(portfolioProvider);
-        expect(state.hasError, isTrue);
-        expect(state.error, isA<AuthException>());
-      },
-    );
+      final state = container.read(portfolioProvider);
+      expect(state.hasError, isTrue);
+      expect(state.error, isA<AuthException>());
+    });
   });
 
   group('PortfolioNotifier user-data merge', () {
@@ -253,9 +242,9 @@ void main() {
       when(
         () => repo.getFuturesAccount(),
       ).thenReturn(TaskEither.right(sampleFutures()));
-      when(() => repo.getAllPrices()).thenReturn(
-        TaskEither.right(<String, Decimal>{'BTCUSDT': d('30000')}),
-      );
+      when(
+        () => repo.getAllPrices(),
+      ).thenReturn(TaskEither.right(<String, Decimal>{'BTCUSDT': d('30000')}));
 
       // Force the initial load to land first.
       await container.read(portfolioProvider.future);
@@ -278,54 +267,51 @@ void main() {
       expect(state.stale, isFalse);
     });
 
-    test(
-      'FuturesAccountUpdate merges positions and assets',
-      () async {
-        when(() => cache.load()).thenReturn(TaskEither.right(null));
-        when(
-          () => repo.getSpotAccount(),
-        ).thenReturn(TaskEither.right(sampleSpot()));
-        when(
-          () => repo.getFuturesAccount(),
-        ).thenReturn(TaskEither.right(sampleFutures()));
-        when(() => repo.getAllPrices()).thenReturn(
-          TaskEither.right(<String, Decimal>{'BTCUSDT': d('30000')}),
-        );
+    test('FuturesAccountUpdate merges positions and assets', () async {
+      when(() => cache.load()).thenReturn(TaskEither.right(null));
+      when(
+        () => repo.getSpotAccount(),
+      ).thenReturn(TaskEither.right(sampleSpot()));
+      when(
+        () => repo.getFuturesAccount(),
+      ).thenReturn(TaskEither.right(sampleFutures()));
+      when(
+        () => repo.getAllPrices(),
+      ).thenReturn(TaskEither.right(<String, Decimal>{'BTCUSDT': d('30000')}));
 
-        await container.read(portfolioProvider.future);
+      await container.read(portfolioProvider.future);
 
-        userStream.emit(
-          FuturesAccountUpdate(
-            assets: [
-              FuturesAssetBalance(
-                asset: 'USDT',
-                walletBalance: d('900'),
-                unrealizedProfit: Decimal.zero,
-                marginBalance: d('900'),
-                availableBalance: d('900'),
-              ),
-            ],
-            positions: [
-              FuturesPosition(
-                symbol: 'BTCUSDT',
-                positionAmt: d('0.1'),
-                entryPrice: d('30000'),
-                unrealizedProfit: d('50'),
-                marginType: 'cross',
-                leverage: Decimal.one,
-              ),
-            ],
-          ),
-        );
+      userStream.emit(
+        FuturesAccountUpdate(
+          assets: [
+            FuturesAssetBalance(
+              asset: 'USDT',
+              walletBalance: d('900'),
+              unrealizedProfit: Decimal.zero,
+              marginBalance: d('900'),
+              availableBalance: d('900'),
+            ),
+          ],
+          positions: [
+            FuturesPosition(
+              symbol: 'BTCUSDT',
+              positionAmt: d('0.1'),
+              entryPrice: d('30000'),
+              unrealizedProfit: d('50'),
+              marginType: 'cross',
+              leverage: Decimal.one,
+            ),
+          ],
+        ),
+      );
 
-        await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
 
-        final state = container.read(portfolioProvider).requireValue;
-        expect(state.futures.assets.first.walletBalance, d('900'));
-        expect(state.futures.positions, hasLength(1));
-        expect(state.futures.positions.first.symbol, 'BTCUSDT');
-      },
-    );
+      final state = container.read(portfolioProvider).requireValue;
+      expect(state.futures.assets.first.walletBalance, d('900'));
+      expect(state.futures.positions, hasLength(1));
+      expect(state.futures.positions.first.symbol, 'BTCUSDT');
+    });
   });
 
   group('PortfolioNotifier.refresh', () {
@@ -337,16 +323,16 @@ void main() {
       when(
         () => repo.getFuturesAccount(),
       ).thenReturn(TaskEither.right(sampleFutures()));
-      when(() => repo.getAllPrices()).thenReturn(
-        TaskEither.right(<String, Decimal>{'BTCUSDT': d('30000')}),
-      );
+      when(
+        () => repo.getAllPrices(),
+      ).thenReturn(TaskEither.right(<String, Decimal>{'BTCUSDT': d('30000')}));
 
       await container.read(portfolioProvider.future);
 
       // Stub a new price and refresh.
-      when(() => repo.getAllPrices()).thenReturn(
-        TaskEither.right(<String, Decimal>{'BTCUSDT': d('40000')}),
-      );
+      when(
+        () => repo.getAllPrices(),
+      ).thenReturn(TaskEither.right(<String, Decimal>{'BTCUSDT': d('40000')}));
 
       await container.read(portfolioProvider.notifier).refresh();
 

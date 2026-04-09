@@ -91,57 +91,51 @@ void main() {
       },
     );
 
-    test(
-      'registers a CancelToken and unregisters it after success',
-      () async {
-        when(
-          () => spotDio.get<Map<String, dynamic>>(
-            any(),
-            queryParameters: any(named: 'queryParameters'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer(
-          (_) async => Response<Map<String, dynamic>>(
-            requestOptions: RequestOptions(path: '/api/v3/account'),
-            statusCode: 200,
-            data: <String, dynamic>{'balances': <Map<String, dynamic>>[]},
-          ),
-        );
+    test('registers a CancelToken and unregisters it after success', () async {
+      when(
+        () => spotDio.get<Map<String, dynamic>>(
+          any(),
+          queryParameters: any(named: 'queryParameters'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer(
+        (_) async => Response<Map<String, dynamic>>(
+          requestOptions: RequestOptions(path: '/api/v3/account'),
+          statusCode: 200,
+          data: <String, dynamic>{'balances': <Map<String, dynamic>>[]},
+        ),
+      );
 
-        await repo.getSpotAccount().run();
+      await repo.getSpotAccount().run();
 
-        verify(() => session.registerCancelToken(any())).called(1);
-        verify(() => session.unregisterCancelToken(any())).called(1);
-      },
-    );
+      verify(() => session.registerCancelToken(any())).called(1);
+      verify(() => session.unregisterCancelToken(any())).called(1);
+    });
 
-    test(
-      'DioException carrying AppException is unwrapped into Left',
-      () async {
-        when(
-          () => spotDio.get<Map<String, dynamic>>(
-            any(),
-            queryParameters: any(named: 'queryParameters'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenThrow(
-          DioException(
-            requestOptions: RequestOptions(path: '/api/v3/account'),
-            error: const AppException.auth(message: 'bad key'),
-          ),
-        );
+    test('DioException carrying AppException is unwrapped into Left', () async {
+      when(
+        () => spotDio.get<Map<String, dynamic>>(
+          any(),
+          queryParameters: any(named: 'queryParameters'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(path: '/api/v3/account'),
+          error: const AppException.auth(message: 'bad key'),
+        ),
+      );
 
-        final result = await repo.getSpotAccount().run();
+      final result = await repo.getSpotAccount().run();
 
-        expect(result.isLeft(), isTrue);
-        result.match(
-          (err) => expect(err, isA<AuthException>()),
-          (_) => fail('expected Left'),
-        );
-        // Even on failure the token is released.
-        verify(() => session.unregisterCancelToken(any())).called(1);
-      },
-    );
+      expect(result.isLeft(), isTrue);
+      result.match(
+        (err) => expect(err, isA<AuthException>()),
+        (_) => fail('expected Left'),
+      );
+      // Even on failure the token is released.
+      verify(() => session.unregisterCancelToken(any())).called(1);
+    });
   });
 
   group('getFuturesAccount', () {

@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:talker/talker.dart';
 
+import '../../features/favorites/data/favorites_repository.dart';
+import '../../features/markets/data/market_ws_manager.dart';
 import '../db/portfolio_cache.dart';
 import '../env/env_manager.dart';
 import '../models/app_exception.dart';
@@ -29,17 +31,23 @@ class SessionManager {
     required Talker talker,
     UserDataStream? userDataStream,
     PortfolioCache? portfolioCache,
+    MarketWsManager? marketWsManager,
+    FavoritesRepository? favoritesRepository,
   }) : _credentials = credentialsManager,
        _envManager = envManager,
        _talker = talker,
        _userDataStream = userDataStream,
-       _portfolioCache = portfolioCache;
+       _portfolioCache = portfolioCache,
+       _marketWsManager = marketWsManager,
+       _favoritesRepository = favoritesRepository;
 
   final CredentialsManager _credentials;
   final EnvManager _envManager;
   final Talker _talker;
   final UserDataStream? _userDataStream;
   final PortfolioCache? _portfolioCache;
+  final MarketWsManager? _marketWsManager;
+  final FavoritesRepository? _favoritesRepository;
 
   final Set<CancelToken> _cancelTokens = <CancelToken>{};
 
@@ -103,12 +111,30 @@ class SessionManager {
         }
         _cancelTokens.clear();
 
-        // 2. WebSocket teardown — stops listen-key refresh timer,
-        //    DELETEs both listen keys, disconnects both sockets.
+        // 2a. User data WebSocket teardown — stops listen-key refresh
+        //     timer, DELETEs both listen keys, disconnects both sockets.
         final userStream = _userDataStream;
         if (userStream != null) {
           await userStream.stopAll();
           _talker.info('logout: user data streams stopped');
+        }
+
+        // 2b. Market WebSocket teardown — disconnects all per-symbol
+        //     ticker/depth/trade/kline subscriptions (Phase 4).
+        final marketWs = _marketWsManager;
+        if (marketWs != null) {
+          await marketWs.unsubscribeAll();
+          _talker.info('logout: market WS streams stopped');
+        }
+
+        // 2c. Wipe favorites table (Phase 4). Settings are preserved.
+        final favRepo = _favoritesRepository;
+        if (favRepo is DriftFavoritesRepository) {
+          final favResult = await favRepo.clearAll().run();
+          favResult.match(
+            (err) => _talker.error('logout: favorites clear failed', err),
+            (_) => _talker.info('logout: favorites cleared'),
+          );
         }
 
         // 3. Wipe credentials + env from secure storage.

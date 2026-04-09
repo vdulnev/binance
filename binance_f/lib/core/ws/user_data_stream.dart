@@ -259,8 +259,7 @@ class UserDataStream {
     if (futuresKey != null) {
       final r = await _keys.keepAliveFutures(futuresKey).run();
       r.match(
-        (err) =>
-            _talker.error('UserDataStream: futures keepAlive failed', err),
+        (err) => _talker.error('UserDataStream: futures keepAlive failed', err),
         (_) => _talker.debug('UserDataStream: futures keepAlive ok'),
       );
     }
@@ -299,9 +298,7 @@ class UserDataStream {
             // / marginBalance / availableBalance from the last REST snapshot.
             unrealizedProfit: Decimal.zero,
             marginBalance: Decimal.parse(a['wb'].toString()),
-            availableBalance: Decimal.parse(
-              (a['cw'] ?? a['wb']).toString(),
-            ),
+            availableBalance: Decimal.parse((a['cw'] ?? a['wb']).toString()),
           ),
         )
         .toList(growable: false);

@@ -7,8 +7,7 @@ part 'app_database.g.dart';
 ///
 /// Phase 3 stores the entire [PortfolioSnapshot] JSON in a single row so
 /// the offline read path can be a trivial `SELECT * FROM cached_portfolio
-/// WHERE id=1`. Later phases (4, 8) will add proper tables for favorites,
-/// cached orders, etc.
+/// WHERE id=1`. Later phases (8) will add proper tables for cached orders.
 class CachedPortfolio extends Table {
   IntColumn get id => integer().withDefault(const Constant(1))();
 
@@ -20,14 +19,39 @@ class CachedPortfolio extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+/// User-editable favorites list. Each row is a `(symbol, market)` pair
+/// with a `position` column controlling sort order. Phase 4.
+class Favorites extends Table {
+  TextColumn get symbol => text()();
+  TextColumn get market => text()();
+  IntColumn get position => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {symbol, market};
+}
+
+/// Cached exchange info symbols. Phase 4 stores each symbol from the
+/// `GET /api/v3/exchangeInfo` and `GET /fapi/v1/exchangeInfo` responses
+/// so client-side filter validation works offline (Phase 5/6).
+class CachedSymbols extends Table {
+  TextColumn get symbol => text()();
+  TextColumn get market => text()();
+  TextColumn get baseAsset => text()();
+  TextColumn get quoteAsset => text()();
+  TextColumn get status => text()();
+  TextColumn get filtersJson => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {symbol, market};
+}
+
 /// The app's Drift database. Owned as a lazy singleton in get_it — see
 /// `lib/core/di/service_locator.dart`.
 ///
-/// The schema is intentionally minimal at Phase 3. Phases 4 / 8 / 9 / 11
-/// will add favorites, cached orders, price alerts, and settings tables.
 /// Migrations are versioned — never edit a past migration, always add a
 /// new one.
-@DriftDatabase(tables: [CachedPortfolio])
+@DriftDatabase(tables: [CachedPortfolio, Favorites, CachedSymbols])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -36,12 +60,18 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) async {
       await m.createAll();
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+      if (from < 2) {
+        await m.createTable(favorites);
+        await m.createTable(cachedSymbols);
+      }
     },
   );
 }

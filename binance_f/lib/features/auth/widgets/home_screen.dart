@@ -5,53 +5,55 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/env/env.dart';
 import '../../../core/env/env_manager.dart';
-import '../../../core/models/app_exception.dart';
 import '../../../core/router/app_router.dart';
-import '../../portfolio/data/models/portfolio_snapshot.dart';
+import '../../markets/widgets/markets_tab.dart';
 import '../../portfolio/providers/portfolio_provider.dart';
-import '../../portfolio/widgets/futures_positions_list.dart';
-import '../../portfolio/widgets/futures_wallet_list.dart';
-import '../../portfolio/widgets/portfolio_header.dart';
-import '../../portfolio/widgets/spot_balances_list.dart';
-import '../../portfolio/widgets/stale_banner.dart';
+import '../../portfolio/widgets/portfolio_tab.dart';
 import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
 
-/// Phase 3 home screen: portfolio dashboard.
+/// Shell screen with a bottom navigation bar switching between the
+/// Portfolio (Phase 3) and Markets (Phase 4) tabs.
 ///
-/// Watches [portfolioProvider] and renders the loading / error / data
-/// states. Business logic (refresh, live updates, caching) lives in the
-/// provider. This widget only dispatches actions and renders state.
+/// Auth listener redirects to login on logout. Common actions (env
+/// chip, refresh, logout) live in the AppBar; tab-specific content is
+/// delegated to [PortfolioTab] and [MarketsTab].
 @RoutePage()
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  int _currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
     ref.listen<AuthState>(authProvider, (_, state) {
       if (state is AuthUnauthenticated) {
         context.router.replaceAll([const LoginRoute()]);
       }
     });
 
-    final portfolio = ref.watch(portfolioProvider);
     final env = sl<EnvManager>().current.env;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Portfolio'),
+        title: Text(_currentIndex == 0 ? 'Portfolio' : 'Markets'),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Center(child: _EnvChip(env: env)),
           ),
-          IconButton(
-            key: const ValueKey('portfolio-refresh'),
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
-            onPressed: () =>
-                ref.read(portfolioProvider.notifier).refresh(),
-          ),
+          if (_currentIndex == 0)
+            IconButton(
+              key: const ValueKey('portfolio-refresh'),
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Refresh',
+              onPressed: () => ref.read(portfolioProvider.notifier).refresh(),
+            ),
           IconButton(
             key: const ValueKey('portfolio-logout'),
             icon: const Icon(Icons.logout),
@@ -60,86 +62,34 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: portfolio.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => _ErrorView(
-          error: err,
-          onRetry: () => ref.read(portfolioProvider.notifier).refresh(),
-        ),
-        data: (snapshot) => _PortfolioBody(snapshot: snapshot),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: const [PortfolioTab(), MarketsTab()],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
+          setState(() => _currentIndex = index);
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: Icon(Icons.account_balance_wallet),
+            label: 'Portfolio',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.candlestick_chart_outlined),
+            selectedIcon: Icon(Icons.candlestick_chart),
+            label: 'Markets',
+          ),
+        ],
       ),
     );
-  }
-}
-
-class _PortfolioBody extends StatelessWidget {
-  const _PortfolioBody({required this.snapshot});
-
-  final PortfolioSnapshot snapshot;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      children: [
-        if (snapshot.stale) const StaleBanner(),
-        PortfolioHeader(snapshot: snapshot),
-        SpotBalancesList(balances: snapshot.spot.balances),
-        FuturesPositionsList(positions: snapshot.futures.positions),
-        FuturesWalletList(assets: snapshot.futures.assets),
-        const SizedBox(height: 24),
-      ],
-    );
-  }
-}
-
-class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.error, required this.onRetry});
-
-  final Object error;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: theme.colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _messageFor(error),
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _messageFor(Object error) {
-    if (error is AppException) return error.displayMessage;
-    return error.toString();
   }
 }
 
 /// Compact chip in the AppBar that surfaces which Binance environment the
-/// app is currently pointed at. Testnet uses a tertiary color so a
-/// developer can never confuse it with mainnet at a glance.
+/// app is currently pointed at.
 class _EnvChip extends StatelessWidget {
   const _EnvChip({required this.env});
 

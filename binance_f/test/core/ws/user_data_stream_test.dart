@@ -47,8 +47,7 @@ class _FakeChannel implements WebSocketChannel {
   Future<void> get ready => Future.value();
 
   @override
-  dynamic noSuchMethod(Invocation invocation) =>
-      super.noSuchMethod(invocation);
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _FakeSink implements WebSocketSink {
@@ -75,8 +74,7 @@ class _FakeSink implements WebSocketSink {
 }
 
 class _StubEnvManager extends EnvManager {
-  _StubEnvManager()
-    : super(talker: Talker(), dioFactory: (_, _) => Dio());
+  _StubEnvManager() : super(talker: Talker(), dioFactory: (_, _) => Dio());
 }
 
 WsClient _buildClient({
@@ -107,18 +105,10 @@ void main() {
     // Default stubs for the close/keepAlive paths so that tearDown chains
     // (which call `dispose` → `stopAll`) don't blow up. Individual tests
     // override these as needed.
-    when(
-      () => keys.closeSpot(any()),
-    ).thenReturn(TaskEither.right(unit));
-    when(
-      () => keys.closeFutures(any()),
-    ).thenReturn(TaskEither.right(unit));
-    when(
-      () => keys.keepAliveSpot(any()),
-    ).thenReturn(TaskEither.right(unit));
-    when(
-      () => keys.keepAliveFutures(any()),
-    ).thenReturn(TaskEither.right(unit));
+    when(() => keys.closeSpot(any())).thenReturn(TaskEither.right(unit));
+    when(() => keys.closeFutures(any())).thenReturn(TaskEither.right(unit));
+    when(() => keys.keepAliveSpot(any())).thenReturn(TaskEither.right(unit));
+    when(() => keys.keepAliveFutures(any())).thenReturn(TaskEither.right(unit));
   });
 
   group('UserDataStream.startSpot', () {
@@ -211,9 +201,38 @@ void main() {
   });
 
   group('UserDataStream.stopAll', () {
-    test(
-      'DELETEs both listen keys and tears down both sockets',
-      () async {
+    test('DELETEs both listen keys and tears down both sockets', () async {
+      when(
+        () => keys.createSpot(),
+      ).thenReturn(TaskEither.right('spot-listen-key'));
+      when(
+        () => keys.createFutures(),
+      ).thenReturn(TaskEither.right('futures-listen-key'));
+      when(() => keys.closeSpot(any())).thenReturn(TaskEither.right(unit));
+      when(() => keys.closeFutures(any())).thenReturn(TaskEither.right(unit));
+
+      final stream = UserDataStream(
+        listenKeyClient: keys,
+        envManager: env,
+        talker: talker,
+        wsClientFactory: (u) =>
+            _buildClient(channel: _FakeChannel(), talker: talker, url: u),
+      );
+
+      await stream.startSpot().run();
+      await stream.startFutures().run();
+      await stream.stopAll();
+
+      verify(() => keys.closeSpot('spot-listen-key')).called(1);
+      verify(() => keys.closeFutures('futures-listen-key')).called(1);
+      expect(stream.spotActive, isFalse);
+      expect(stream.futuresActive, isFalse);
+    });
+  });
+
+  group('UserDataStream.refresh timer', () {
+    test('30-min refresh timer PUTs both listen keys on each tick', () {
+      FakeAsync().run((fake) {
         when(
           () => keys.createSpot(),
         ).thenReturn(TaskEither.right('spot-listen-key'));
@@ -221,95 +240,46 @@ void main() {
           () => keys.createFutures(),
         ).thenReturn(TaskEither.right('futures-listen-key'));
         when(
-          () => keys.closeSpot(any()),
+          () => keys.keepAliveSpot(any()),
         ).thenReturn(TaskEither.right(unit));
         when(
-          () => keys.closeFutures(any()),
+          () => keys.keepAliveFutures(any()),
         ).thenReturn(TaskEither.right(unit));
+        when(() => keys.closeSpot(any())).thenReturn(TaskEither.right(unit));
+        when(() => keys.closeFutures(any())).thenReturn(TaskEither.right(unit));
 
         final stream = UserDataStream(
           listenKeyClient: keys,
           envManager: env,
           talker: talker,
-          wsClientFactory: (u) => _buildClient(
-            channel: _FakeChannel(),
-            talker: talker,
-            url: u,
-          ),
+          wsClientFactory: (u) =>
+              _buildClient(channel: _FakeChannel(), talker: talker, url: u),
+          refreshInterval: const Duration(minutes: 30),
         );
 
-        await stream.startSpot().run();
-        await stream.startFutures().run();
-        await stream.stopAll();
+        stream.startSpot().run();
+        stream.startFutures().run();
+        fake.flushMicrotasks();
 
-        verify(() => keys.closeSpot('spot-listen-key')).called(1);
-        verify(() => keys.closeFutures('futures-listen-key')).called(1);
-        expect(stream.spotActive, isFalse);
-        expect(stream.futuresActive, isFalse);
-      },
-    );
-  });
+        // No keepAlive yet.
+        verifyNever(() => keys.keepAliveSpot(any()));
+        verifyNever(() => keys.keepAliveFutures(any()));
 
-  group('UserDataStream.refresh timer', () {
-    test(
-      '30-min refresh timer PUTs both listen keys on each tick',
-      () {
-        FakeAsync().run((fake) {
-          when(
-            () => keys.createSpot(),
-          ).thenReturn(TaskEither.right('spot-listen-key'));
-          when(
-            () => keys.createFutures(),
-          ).thenReturn(TaskEither.right('futures-listen-key'));
-          when(
-            () => keys.keepAliveSpot(any()),
-          ).thenReturn(TaskEither.right(unit));
-          when(
-            () => keys.keepAliveFutures(any()),
-          ).thenReturn(TaskEither.right(unit));
-          when(
-            () => keys.closeSpot(any()),
-          ).thenReturn(TaskEither.right(unit));
-          when(
-            () => keys.closeFutures(any()),
-          ).thenReturn(TaskEither.right(unit));
+        // Tick at 30 min → both PUTs fire.
+        fake.elapse(const Duration(minutes: 30));
+        fake.flushMicrotasks();
 
-          final stream = UserDataStream(
-            listenKeyClient: keys,
-            envManager: env,
-            talker: talker,
-            wsClientFactory: (u) => _buildClient(
-              channel: _FakeChannel(),
-              talker: talker,
-              url: u,
-            ),
-            refreshInterval: const Duration(minutes: 30),
-          );
+        verify(() => keys.keepAliveSpot('spot-listen-key')).called(1);
+        verify(() => keys.keepAliveFutures('futures-listen-key')).called(1);
 
-          stream.startSpot().run();
-          stream.startFutures().run();
-          fake.flushMicrotasks();
+        // Tick at 60 min → another pair of PUTs.
+        fake.elapse(const Duration(minutes: 30));
+        fake.flushMicrotasks();
 
-          // No keepAlive yet.
-          verifyNever(() => keys.keepAliveSpot(any()));
-          verifyNever(() => keys.keepAliveFutures(any()));
-
-          // Tick at 30 min → both PUTs fire.
-          fake.elapse(const Duration(minutes: 30));
-          fake.flushMicrotasks();
-
-          verify(() => keys.keepAliveSpot('spot-listen-key')).called(1);
-          verify(() => keys.keepAliveFutures('futures-listen-key')).called(1);
-
-          // Tick at 60 min → another pair of PUTs.
-          fake.elapse(const Duration(minutes: 30));
-          fake.flushMicrotasks();
-
-          verify(() => keys.keepAliveSpot('spot-listen-key')).called(1);
-          verify(() => keys.keepAliveFutures('futures-listen-key')).called(1);
-        });
-      },
-    );
+        verify(() => keys.keepAliveSpot('spot-listen-key')).called(1);
+        verify(() => keys.keepAliveFutures('futures-listen-key')).called(1);
+      });
+    });
   });
 
   group('listen key failure modes', () {
@@ -322,11 +292,8 @@ void main() {
         listenKeyClient: keys,
         envManager: env,
         talker: talker,
-        wsClientFactory: (u) => _buildClient(
-          channel: _FakeChannel(),
-          talker: talker,
-          url: u,
-        ),
+        wsClientFactory: (u) =>
+            _buildClient(channel: _FakeChannel(), talker: talker, url: u),
       );
       addTearDown(stream.dispose);
 

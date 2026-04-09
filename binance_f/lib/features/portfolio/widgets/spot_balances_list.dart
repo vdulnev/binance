@@ -33,9 +33,7 @@ class SpotBalancesList extends StatelessWidget {
     return _SectionScaffold(
       title: 'Spot balances',
       child: Column(
-        children: [
-          for (final b in balances) _SpotBalanceRow(balance: b),
-        ],
+        children: [for (final b in balances) _SpotBalanceRow(balance: b)],
       ),
     );
   }

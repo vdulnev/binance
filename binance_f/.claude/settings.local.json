@@ -15,7 +15,10 @@
       "Bash(curl -s https://pub.dev/api/packages/fpdart)",
       "Bash(curl:*)",
       "mcp__dart__pub",
-      "mcp__dart__analyze_files"
+      "mcp__dart__analyze_files",
+      "Bash(grep -B2 -A15 'class \\\\$AsyncNotifier' /Users/vd/.pub-cache/hosted/pub.dev/riverpod-3.2.1/lib/src/providers/async_notifier/orphan.dart)",
+      "Bash(grep -rn 'class \\\\$AsyncNotifier' /Users/vd/.pub-cache/hosted/pub.dev/riverpod-3.2.1/lib/src/)",
+      "Bash(grep:*)"
     ]
   }
 }

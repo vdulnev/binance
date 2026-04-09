@@ -5,7 +5,13 @@ import 'package:talker/talker.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// Connection lifecycle states exposed by [WsClient.state].
-enum WsState { disconnected, connecting, connected, reconnecting, disconnecting }
+enum WsState {
+  disconnected,
+  connecting,
+  connected,
+  reconnecting,
+  disconnecting,
+}
 
 /// Function shape used by [WsClient] to open an underlying
 /// [WebSocketChannel]. Injecting this lets tests swap in a fake channel
@@ -46,8 +52,7 @@ class WsClient {
     Duration stableThreshold = const Duration(seconds: 10),
     Duration heartbeatTimeout = const Duration(minutes: 6),
   }) : _talker = talker,
-       _channelFactory =
-           channelFactory ?? ((u) => WebSocketChannel.connect(u)),
+       _channelFactory = channelFactory ?? ((u) => WebSocketChannel.connect(u)),
        _initialBackoff = initialBackoff,
        _maxBackoff = maxBackoff,
        _stableThreshold = stableThreshold,
@@ -158,7 +163,9 @@ class WsClient {
 
   void _onFrame(dynamic frame) {
     _armHeartbeat();
-    final text = frame is String ? frame : (frame is List<int> ? utf8.decode(frame) : null);
+    final text = frame is String
+        ? frame
+        : (frame is List<int> ? utf8.decode(frame) : null);
     if (text == null || text.isEmpty) return;
 
     // Adapter: malformed JSON gets logged and dropped rather than crashing

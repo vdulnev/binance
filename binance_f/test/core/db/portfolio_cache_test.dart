@@ -75,8 +75,9 @@ void main() {
 
   test('save replaces the singleton row (id=1) instead of appending', () async {
     final first = sampleSnapshot(DateTime.utc(2026, 4, 8, 10));
-    final second = sampleSnapshot(DateTime.utc(2026, 4, 8, 11))
-        .copyWith(totalValueInQuote: Decimal.parse('99999'));
+    final second = sampleSnapshot(
+      DateTime.utc(2026, 4, 8, 11),
+    ).copyWith(totalValueInQuote: Decimal.parse('99999'));
 
     await cache.save(first).run();
     await cache.save(second).run();
