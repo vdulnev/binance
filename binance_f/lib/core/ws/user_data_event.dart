@@ -50,4 +50,26 @@ sealed class UserDataEvent with _$UserDataEvent {
     required int time,
     required int updateTime,
   }) = SpotOrderUpdate;
+
+  /// Futures `ORDER_TRADE_UPDATE` — pushed on every futures order
+  /// lifecycle event. Analogous to spot's executionReport.
+  const factory UserDataEvent.futuresOrderUpdate({
+    required String symbol,
+    required int orderId,
+    required String clientOrderId,
+    required OrderSide side,
+    required OrderType orderType,
+    required OrderStatus status,
+    required Decimal price,
+    required Decimal origQty,
+    required Decimal executedQty,
+    required Decimal cumQuote,
+    TimeInForce? timeInForce,
+    Decimal? stopPrice,
+    Decimal? activatePrice,
+    Decimal? callbackRate,
+    required bool reduceOnly,
+    required int time,
+    required int updateTime,
+  }) = FuturesOrderUpdate;
 }

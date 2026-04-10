@@ -334,8 +334,16 @@ class UserDataStream {
   }
 
   void _onFuturesFrame(Map<String, dynamic> frame) {
-    final eventType = frame['e'];
-    if (eventType != 'ACCOUNT_UPDATE') return;
+    final eventType = frame['e'] as String?;
+    switch (eventType) {
+      case 'ACCOUNT_UPDATE':
+        _onFuturesAccountUpdate(frame);
+      case 'ORDER_TRADE_UPDATE':
+        _onFuturesOrderUpdate(frame);
+    }
+  }
+
+  void _onFuturesAccountUpdate(Map<String, dynamic> frame) {
     final payload = (frame['a'] as Map<String, dynamic>?) ?? const {};
     final rawAssets = (payload['B'] as List?) ?? const [];
     final assets = rawAssets
@@ -344,9 +352,6 @@ class UserDataStream {
           (a) => FuturesAssetBalance(
             asset: a['a'] as String,
             walletBalance: Decimal.parse(a['wb'].toString()),
-            // Futures user stream emits per-asset walletBalance + crossWallet
-            // only; the provider layer keeps its own running unrealizedProfit
-            // / marginBalance / availableBalance from the last REST snapshot.
             unrealizedProfit: Decimal.zero,
             marginBalance: Decimal.parse(a['wb'].toString()),
             availableBalance: Decimal.parse((a['cw'] ?? a['wb']).toString()),
@@ -371,6 +376,52 @@ class UserDataStream {
 
     _events.add(
       UserDataEvent.futuresAccountUpdate(assets: assets, positions: positions),
+    );
+  }
+
+  void _onFuturesOrderUpdate(Map<String, dynamic> frame) {
+    final o = (frame['o'] as Map<String, dynamic>?) ?? const {};
+    Decimal d(String key) => Decimal.parse((o[key] ?? '0').toString());
+
+    final statusStr = o['X'] as String? ?? '';
+    final typeStr = o['o'] as String? ?? '';
+    final sideStr = o['S'] as String? ?? '';
+    final tifStr = o['f'] as String?;
+
+    _events.add(
+      UserDataEvent.futuresOrderUpdate(
+        symbol: o['s'] as String? ?? '',
+        orderId: (o['i'] as num?)?.toInt() ?? 0,
+        clientOrderId: o['c'] as String? ?? '',
+        side: OrderSide.values.firstWhere(
+          (e) => e.name == sideStr,
+          orElse: () => OrderSide.BUY,
+        ),
+        orderType: OrderType.values.firstWhere(
+          (e) => e.name == typeStr,
+          orElse: () => OrderType.MARKET,
+        ),
+        status: OrderStatus.values.firstWhere(
+          (e) => e.name == statusStr,
+          orElse: () => OrderStatus.NEW,
+        ),
+        price: d('p'),
+        origQty: d('q'),
+        executedQty: d('z'),
+        cumQuote: d('Z'),
+        timeInForce: tifStr != null
+            ? TimeInForce.values.firstWhere(
+                (e) => e.name == tifStr,
+                orElse: () => TimeInForce.GTC,
+              )
+            : null,
+        stopPrice: o['sp'] != null ? d('sp') : null,
+        activatePrice: o['AP'] != null ? d('AP') : null,
+        callbackRate: o['cr'] != null ? d('cr') : null,
+        reduceOnly: o['R'] == true,
+        time: (o['T'] as num?)?.toInt() ?? 0,
+        updateTime: (frame['E'] as num?)?.toInt() ?? 0,
+      ),
     );
   }
 }

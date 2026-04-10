@@ -11,6 +11,59 @@
 part of 'app_router.dart';
 
 /// generated route for
+/// [FuturesOrderTicketScreen]
+class FuturesOrderTicketRoute
+    extends PageRouteInfo<FuturesOrderTicketRouteArgs> {
+  FuturesOrderTicketRoute({
+    Key? key,
+    required String symbol,
+    List<PageRouteInfo>? children,
+  }) : super(
+         FuturesOrderTicketRoute.name,
+         args: FuturesOrderTicketRouteArgs(key: key, symbol: symbol),
+         rawPathParams: {'symbol': symbol},
+         initialChildren: children,
+       );
+
+  static const String name = 'FuturesOrderTicketRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final pathParams = data.inheritedPathParams;
+      final args = data.argsAs<FuturesOrderTicketRouteArgs>(
+        orElse: () =>
+            FuturesOrderTicketRouteArgs(symbol: pathParams.getString('symbol')),
+      );
+      return FuturesOrderTicketScreen(key: args.key, symbol: args.symbol);
+    },
+  );
+}
+
+class FuturesOrderTicketRouteArgs {
+  const FuturesOrderTicketRouteArgs({this.key, required this.symbol});
+
+  final Key? key;
+
+  final String symbol;
+
+  @override
+  String toString() {
+    return 'FuturesOrderTicketRouteArgs{key: $key, symbol: $symbol}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! FuturesOrderTicketRouteArgs) return false;
+    return key == other.key && symbol == other.symbol;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ symbol.hashCode;
+}
+
+/// generated route for
 /// [HomeScreen]
 class HomeRoute extends PageRouteInfo<void> {
   const HomeRoute({List<PageRouteInfo>? children})

@@ -50,6 +50,7 @@ class SigningInterceptor extends Interceptor {
     '/fapi/v1/positionRisk',
     // Futures TRADE
     '/fapi/v1/order',
+    '/fapi/v1/allOpenOrders',
     // Futures USER_STREAM
     '/fapi/v1/listenKey',
     // Capital (SAPI)

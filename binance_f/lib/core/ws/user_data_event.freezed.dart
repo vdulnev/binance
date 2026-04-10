@@ -55,13 +55,14 @@ extension UserDataEventPatterns on UserDataEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( AccountUpdate value)?  accountUpdate,TResult Function( FuturesAccountUpdate value)?  futuresAccountUpdate,TResult Function( SpotOrderUpdate value)?  spotOrderUpdate,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( AccountUpdate value)?  accountUpdate,TResult Function( FuturesAccountUpdate value)?  futuresAccountUpdate,TResult Function( SpotOrderUpdate value)?  spotOrderUpdate,TResult Function( FuturesOrderUpdate value)?  futuresOrderUpdate,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case AccountUpdate() when accountUpdate != null:
 return accountUpdate(_that);case FuturesAccountUpdate() when futuresAccountUpdate != null:
 return futuresAccountUpdate(_that);case SpotOrderUpdate() when spotOrderUpdate != null:
-return spotOrderUpdate(_that);case _:
+return spotOrderUpdate(_that);case FuturesOrderUpdate() when futuresOrderUpdate != null:
+return futuresOrderUpdate(_that);case _:
   return orElse();
 
 }
@@ -79,13 +80,14 @@ return spotOrderUpdate(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( AccountUpdate value)  accountUpdate,required TResult Function( FuturesAccountUpdate value)  futuresAccountUpdate,required TResult Function( SpotOrderUpdate value)  spotOrderUpdate,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( AccountUpdate value)  accountUpdate,required TResult Function( FuturesAccountUpdate value)  futuresAccountUpdate,required TResult Function( SpotOrderUpdate value)  spotOrderUpdate,required TResult Function( FuturesOrderUpdate value)  futuresOrderUpdate,}){
 final _that = this;
 switch (_that) {
 case AccountUpdate():
 return accountUpdate(_that);case FuturesAccountUpdate():
 return futuresAccountUpdate(_that);case SpotOrderUpdate():
-return spotOrderUpdate(_that);}
+return spotOrderUpdate(_that);case FuturesOrderUpdate():
+return futuresOrderUpdate(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -99,13 +101,14 @@ return spotOrderUpdate(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( AccountUpdate value)?  accountUpdate,TResult? Function( FuturesAccountUpdate value)?  futuresAccountUpdate,TResult? Function( SpotOrderUpdate value)?  spotOrderUpdate,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( AccountUpdate value)?  accountUpdate,TResult? Function( FuturesAccountUpdate value)?  futuresAccountUpdate,TResult? Function( SpotOrderUpdate value)?  spotOrderUpdate,TResult? Function( FuturesOrderUpdate value)?  futuresOrderUpdate,}){
 final _that = this;
 switch (_that) {
 case AccountUpdate() when accountUpdate != null:
 return accountUpdate(_that);case FuturesAccountUpdate() when futuresAccountUpdate != null:
 return futuresAccountUpdate(_that);case SpotOrderUpdate() when spotOrderUpdate != null:
-return spotOrderUpdate(_that);case _:
+return spotOrderUpdate(_that);case FuturesOrderUpdate() when futuresOrderUpdate != null:
+return futuresOrderUpdate(_that);case _:
   return null;
 
 }
@@ -122,12 +125,13 @@ return spotOrderUpdate(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<SpotBalance> balances)?  accountUpdate,TResult Function( List<FuturesAssetBalance> assets,  List<FuturesPosition> positions)?  futuresAccountUpdate,TResult Function( String symbol,  int orderId,  String clientOrderId,  OrderSide side,  OrderType orderType,  OrderStatus status,  Decimal price,  Decimal origQty,  Decimal executedQty,  Decimal cummulativeQuoteQty,  TimeInForce? timeInForce,  Decimal? stopPrice,  int time,  int updateTime)?  spotOrderUpdate,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<SpotBalance> balances)?  accountUpdate,TResult Function( List<FuturesAssetBalance> assets,  List<FuturesPosition> positions)?  futuresAccountUpdate,TResult Function( String symbol,  int orderId,  String clientOrderId,  OrderSide side,  OrderType orderType,  OrderStatus status,  Decimal price,  Decimal origQty,  Decimal executedQty,  Decimal cummulativeQuoteQty,  TimeInForce? timeInForce,  Decimal? stopPrice,  int time,  int updateTime)?  spotOrderUpdate,TResult Function( String symbol,  int orderId,  String clientOrderId,  OrderSide side,  OrderType orderType,  OrderStatus status,  Decimal price,  Decimal origQty,  Decimal executedQty,  Decimal cumQuote,  TimeInForce? timeInForce,  Decimal? stopPrice,  Decimal? activatePrice,  Decimal? callbackRate,  bool reduceOnly,  int time,  int updateTime)?  futuresOrderUpdate,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case AccountUpdate() when accountUpdate != null:
 return accountUpdate(_that.balances);case FuturesAccountUpdate() when futuresAccountUpdate != null:
 return futuresAccountUpdate(_that.assets,_that.positions);case SpotOrderUpdate() when spotOrderUpdate != null:
-return spotOrderUpdate(_that.symbol,_that.orderId,_that.clientOrderId,_that.side,_that.orderType,_that.status,_that.price,_that.origQty,_that.executedQty,_that.cummulativeQuoteQty,_that.timeInForce,_that.stopPrice,_that.time,_that.updateTime);case _:
+return spotOrderUpdate(_that.symbol,_that.orderId,_that.clientOrderId,_that.side,_that.orderType,_that.status,_that.price,_that.origQty,_that.executedQty,_that.cummulativeQuoteQty,_that.timeInForce,_that.stopPrice,_that.time,_that.updateTime);case FuturesOrderUpdate() when futuresOrderUpdate != null:
+return futuresOrderUpdate(_that.symbol,_that.orderId,_that.clientOrderId,_that.side,_that.orderType,_that.status,_that.price,_that.origQty,_that.executedQty,_that.cumQuote,_that.timeInForce,_that.stopPrice,_that.activatePrice,_that.callbackRate,_that.reduceOnly,_that.time,_that.updateTime);case _:
   return orElse();
 
 }
@@ -145,12 +149,13 @@ return spotOrderUpdate(_that.symbol,_that.orderId,_that.clientOrderId,_that.side
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<SpotBalance> balances)  accountUpdate,required TResult Function( List<FuturesAssetBalance> assets,  List<FuturesPosition> positions)  futuresAccountUpdate,required TResult Function( String symbol,  int orderId,  String clientOrderId,  OrderSide side,  OrderType orderType,  OrderStatus status,  Decimal price,  Decimal origQty,  Decimal executedQty,  Decimal cummulativeQuoteQty,  TimeInForce? timeInForce,  Decimal? stopPrice,  int time,  int updateTime)  spotOrderUpdate,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<SpotBalance> balances)  accountUpdate,required TResult Function( List<FuturesAssetBalance> assets,  List<FuturesPosition> positions)  futuresAccountUpdate,required TResult Function( String symbol,  int orderId,  String clientOrderId,  OrderSide side,  OrderType orderType,  OrderStatus status,  Decimal price,  Decimal origQty,  Decimal executedQty,  Decimal cummulativeQuoteQty,  TimeInForce? timeInForce,  Decimal? stopPrice,  int time,  int updateTime)  spotOrderUpdate,required TResult Function( String symbol,  int orderId,  String clientOrderId,  OrderSide side,  OrderType orderType,  OrderStatus status,  Decimal price,  Decimal origQty,  Decimal executedQty,  Decimal cumQuote,  TimeInForce? timeInForce,  Decimal? stopPrice,  Decimal? activatePrice,  Decimal? callbackRate,  bool reduceOnly,  int time,  int updateTime)  futuresOrderUpdate,}) {final _that = this;
 switch (_that) {
 case AccountUpdate():
 return accountUpdate(_that.balances);case FuturesAccountUpdate():
 return futuresAccountUpdate(_that.assets,_that.positions);case SpotOrderUpdate():
-return spotOrderUpdate(_that.symbol,_that.orderId,_that.clientOrderId,_that.side,_that.orderType,_that.status,_that.price,_that.origQty,_that.executedQty,_that.cummulativeQuoteQty,_that.timeInForce,_that.stopPrice,_that.time,_that.updateTime);}
+return spotOrderUpdate(_that.symbol,_that.orderId,_that.clientOrderId,_that.side,_that.orderType,_that.status,_that.price,_that.origQty,_that.executedQty,_that.cummulativeQuoteQty,_that.timeInForce,_that.stopPrice,_that.time,_that.updateTime);case FuturesOrderUpdate():
+return futuresOrderUpdate(_that.symbol,_that.orderId,_that.clientOrderId,_that.side,_that.orderType,_that.status,_that.price,_that.origQty,_that.executedQty,_that.cumQuote,_that.timeInForce,_that.stopPrice,_that.activatePrice,_that.callbackRate,_that.reduceOnly,_that.time,_that.updateTime);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -164,12 +169,13 @@ return spotOrderUpdate(_that.symbol,_that.orderId,_that.clientOrderId,_that.side
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<SpotBalance> balances)?  accountUpdate,TResult? Function( List<FuturesAssetBalance> assets,  List<FuturesPosition> positions)?  futuresAccountUpdate,TResult? Function( String symbol,  int orderId,  String clientOrderId,  OrderSide side,  OrderType orderType,  OrderStatus status,  Decimal price,  Decimal origQty,  Decimal executedQty,  Decimal cummulativeQuoteQty,  TimeInForce? timeInForce,  Decimal? stopPrice,  int time,  int updateTime)?  spotOrderUpdate,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<SpotBalance> balances)?  accountUpdate,TResult? Function( List<FuturesAssetBalance> assets,  List<FuturesPosition> positions)?  futuresAccountUpdate,TResult? Function( String symbol,  int orderId,  String clientOrderId,  OrderSide side,  OrderType orderType,  OrderStatus status,  Decimal price,  Decimal origQty,  Decimal executedQty,  Decimal cummulativeQuoteQty,  TimeInForce? timeInForce,  Decimal? stopPrice,  int time,  int updateTime)?  spotOrderUpdate,TResult? Function( String symbol,  int orderId,  String clientOrderId,  OrderSide side,  OrderType orderType,  OrderStatus status,  Decimal price,  Decimal origQty,  Decimal executedQty,  Decimal cumQuote,  TimeInForce? timeInForce,  Decimal? stopPrice,  Decimal? activatePrice,  Decimal? callbackRate,  bool reduceOnly,  int time,  int updateTime)?  futuresOrderUpdate,}) {final _that = this;
 switch (_that) {
 case AccountUpdate() when accountUpdate != null:
 return accountUpdate(_that.balances);case FuturesAccountUpdate() when futuresAccountUpdate != null:
 return futuresAccountUpdate(_that.assets,_that.positions);case SpotOrderUpdate() when spotOrderUpdate != null:
-return spotOrderUpdate(_that.symbol,_that.orderId,_that.clientOrderId,_that.side,_that.orderType,_that.status,_that.price,_that.origQty,_that.executedQty,_that.cummulativeQuoteQty,_that.timeInForce,_that.stopPrice,_that.time,_that.updateTime);case _:
+return spotOrderUpdate(_that.symbol,_that.orderId,_that.clientOrderId,_that.side,_that.orderType,_that.status,_that.price,_that.origQty,_that.executedQty,_that.cummulativeQuoteQty,_that.timeInForce,_that.stopPrice,_that.time,_that.updateTime);case FuturesOrderUpdate() when futuresOrderUpdate != null:
+return futuresOrderUpdate(_that.symbol,_that.orderId,_that.clientOrderId,_that.side,_that.orderType,_that.status,_that.price,_that.origQty,_that.executedQty,_that.cumQuote,_that.timeInForce,_that.stopPrice,_that.activatePrice,_that.callbackRate,_that.reduceOnly,_that.time,_that.updateTime);case _:
   return null;
 
 }
@@ -413,6 +419,104 @@ as Decimal,cummulativeQuoteQty: null == cummulativeQuoteQty ? _self.cummulativeQ
 as Decimal,timeInForce: freezed == timeInForce ? _self.timeInForce : timeInForce // ignore: cast_nullable_to_non_nullable
 as TimeInForce?,stopPrice: freezed == stopPrice ? _self.stopPrice : stopPrice // ignore: cast_nullable_to_non_nullable
 as Decimal?,time: null == time ? _self.time : time // ignore: cast_nullable_to_non_nullable
+as int,updateTime: null == updateTime ? _self.updateTime : updateTime // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class FuturesOrderUpdate extends UserDataEvent {
+  const FuturesOrderUpdate({required this.symbol, required this.orderId, required this.clientOrderId, required this.side, required this.orderType, required this.status, required this.price, required this.origQty, required this.executedQty, required this.cumQuote, this.timeInForce, this.stopPrice, this.activatePrice, this.callbackRate, required this.reduceOnly, required this.time, required this.updateTime}): super._();
+  
+
+ final  String symbol;
+ final  int orderId;
+ final  String clientOrderId;
+ final  OrderSide side;
+ final  OrderType orderType;
+ final  OrderStatus status;
+ final  Decimal price;
+ final  Decimal origQty;
+ final  Decimal executedQty;
+ final  Decimal cumQuote;
+ final  TimeInForce? timeInForce;
+ final  Decimal? stopPrice;
+ final  Decimal? activatePrice;
+ final  Decimal? callbackRate;
+ final  bool reduceOnly;
+ final  int time;
+ final  int updateTime;
+
+/// Create a copy of UserDataEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$FuturesOrderUpdateCopyWith<FuturesOrderUpdate> get copyWith => _$FuturesOrderUpdateCopyWithImpl<FuturesOrderUpdate>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FuturesOrderUpdate&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.clientOrderId, clientOrderId) || other.clientOrderId == clientOrderId)&&(identical(other.side, side) || other.side == side)&&(identical(other.orderType, orderType) || other.orderType == orderType)&&(identical(other.status, status) || other.status == status)&&(identical(other.price, price) || other.price == price)&&(identical(other.origQty, origQty) || other.origQty == origQty)&&(identical(other.executedQty, executedQty) || other.executedQty == executedQty)&&(identical(other.cumQuote, cumQuote) || other.cumQuote == cumQuote)&&(identical(other.timeInForce, timeInForce) || other.timeInForce == timeInForce)&&(identical(other.stopPrice, stopPrice) || other.stopPrice == stopPrice)&&(identical(other.activatePrice, activatePrice) || other.activatePrice == activatePrice)&&(identical(other.callbackRate, callbackRate) || other.callbackRate == callbackRate)&&(identical(other.reduceOnly, reduceOnly) || other.reduceOnly == reduceOnly)&&(identical(other.time, time) || other.time == time)&&(identical(other.updateTime, updateTime) || other.updateTime == updateTime));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,symbol,orderId,clientOrderId,side,orderType,status,price,origQty,executedQty,cumQuote,timeInForce,stopPrice,activatePrice,callbackRate,reduceOnly,time,updateTime);
+
+@override
+String toString() {
+  return 'UserDataEvent.futuresOrderUpdate(symbol: $symbol, orderId: $orderId, clientOrderId: $clientOrderId, side: $side, orderType: $orderType, status: $status, price: $price, origQty: $origQty, executedQty: $executedQty, cumQuote: $cumQuote, timeInForce: $timeInForce, stopPrice: $stopPrice, activatePrice: $activatePrice, callbackRate: $callbackRate, reduceOnly: $reduceOnly, time: $time, updateTime: $updateTime)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $FuturesOrderUpdateCopyWith<$Res> implements $UserDataEventCopyWith<$Res> {
+  factory $FuturesOrderUpdateCopyWith(FuturesOrderUpdate value, $Res Function(FuturesOrderUpdate) _then) = _$FuturesOrderUpdateCopyWithImpl;
+@useResult
+$Res call({
+ String symbol, int orderId, String clientOrderId, OrderSide side, OrderType orderType, OrderStatus status, Decimal price, Decimal origQty, Decimal executedQty, Decimal cumQuote, TimeInForce? timeInForce, Decimal? stopPrice, Decimal? activatePrice, Decimal? callbackRate, bool reduceOnly, int time, int updateTime
+});
+
+
+
+
+}
+/// @nodoc
+class _$FuturesOrderUpdateCopyWithImpl<$Res>
+    implements $FuturesOrderUpdateCopyWith<$Res> {
+  _$FuturesOrderUpdateCopyWithImpl(this._self, this._then);
+
+  final FuturesOrderUpdate _self;
+  final $Res Function(FuturesOrderUpdate) _then;
+
+/// Create a copy of UserDataEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? symbol = null,Object? orderId = null,Object? clientOrderId = null,Object? side = null,Object? orderType = null,Object? status = null,Object? price = null,Object? origQty = null,Object? executedQty = null,Object? cumQuote = null,Object? timeInForce = freezed,Object? stopPrice = freezed,Object? activatePrice = freezed,Object? callbackRate = freezed,Object? reduceOnly = null,Object? time = null,Object? updateTime = null,}) {
+  return _then(FuturesOrderUpdate(
+symbol: null == symbol ? _self.symbol : symbol // ignore: cast_nullable_to_non_nullable
+as String,orderId: null == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
+as int,clientOrderId: null == clientOrderId ? _self.clientOrderId : clientOrderId // ignore: cast_nullable_to_non_nullable
+as String,side: null == side ? _self.side : side // ignore: cast_nullable_to_non_nullable
+as OrderSide,orderType: null == orderType ? _self.orderType : orderType // ignore: cast_nullable_to_non_nullable
+as OrderType,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as OrderStatus,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
+as Decimal,origQty: null == origQty ? _self.origQty : origQty // ignore: cast_nullable_to_non_nullable
+as Decimal,executedQty: null == executedQty ? _self.executedQty : executedQty // ignore: cast_nullable_to_non_nullable
+as Decimal,cumQuote: null == cumQuote ? _self.cumQuote : cumQuote // ignore: cast_nullable_to_non_nullable
+as Decimal,timeInForce: freezed == timeInForce ? _self.timeInForce : timeInForce // ignore: cast_nullable_to_non_nullable
+as TimeInForce?,stopPrice: freezed == stopPrice ? _self.stopPrice : stopPrice // ignore: cast_nullable_to_non_nullable
+as Decimal?,activatePrice: freezed == activatePrice ? _self.activatePrice : activatePrice // ignore: cast_nullable_to_non_nullable
+as Decimal?,callbackRate: freezed == callbackRate ? _self.callbackRate : callbackRate // ignore: cast_nullable_to_non_nullable
+as Decimal?,reduceOnly: null == reduceOnly ? _self.reduceOnly : reduceOnly // ignore: cast_nullable_to_non_nullable
+as bool,time: null == time ? _self.time : time // ignore: cast_nullable_to_non_nullable
 as int,updateTime: null == updateTime ? _self.updateTime : updateTime // ignore: cast_nullable_to_non_nullable
 as int,
   ));

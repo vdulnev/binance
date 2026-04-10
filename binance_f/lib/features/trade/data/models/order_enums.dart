@@ -7,6 +7,7 @@
 enum OrderSide { BUY, SELL }
 
 enum OrderType {
+  // Spot + Futures
   MARKET,
   LIMIT,
   STOP_LOSS,
@@ -14,9 +15,13 @@ enum OrderType {
   TAKE_PROFIT,
   TAKE_PROFIT_LIMIT,
   LIMIT_MAKER,
+  // Futures only
+  STOP_MARKET,
+  TAKE_PROFIT_MARKET,
+  TRAILING_STOP_MARKET,
 }
 
-enum TimeInForce { GTC, IOC, FOK }
+enum TimeInForce { GTC, IOC, FOK, GTX }
 
 enum OrderStatus {
   NEW,
@@ -39,6 +44,9 @@ extension OrderTypeLabel on OrderType {
     OrderType.TAKE_PROFIT => 'Take Profit',
     OrderType.TAKE_PROFIT_LIMIT => 'Take Profit Limit',
     OrderType.LIMIT_MAKER => 'Limit Maker',
+    OrderType.STOP_MARKET => 'Stop Market',
+    OrderType.TAKE_PROFIT_MARKET => 'Take Profit Market',
+    OrderType.TRAILING_STOP_MARKET => 'Trailing Stop',
   };
 
   /// Whether this order type requires a price field.
@@ -55,7 +63,9 @@ extension OrderTypeLabel on OrderType {
     OrderType.STOP_LOSS ||
     OrderType.STOP_LOSS_LIMIT ||
     OrderType.TAKE_PROFIT ||
-    OrderType.TAKE_PROFIT_LIMIT => true,
+    OrderType.TAKE_PROFIT_LIMIT ||
+    OrderType.STOP_MARKET ||
+    OrderType.TAKE_PROFIT_MARKET => true,
     _ => false,
   };
 
@@ -66,4 +76,26 @@ extension OrderTypeLabel on OrderType {
     OrderType.TAKE_PROFIT_LIMIT => true,
     _ => false,
   };
+
+  /// Whether this is a futures-only order type.
+  bool get isFuturesOnly => switch (this) {
+    OrderType.STOP_MARKET ||
+    OrderType.TAKE_PROFIT_MARKET ||
+    OrderType.TRAILING_STOP_MARKET => true,
+    _ => false,
+  };
+
+  /// Whether this order type supports a callback rate (trailing stop).
+  bool get hasCallbackRate => this == OrderType.TRAILING_STOP_MARKET;
 }
+
+/// Futures order types available in the order ticket.
+const futuresOrderTypes = [
+  OrderType.MARKET,
+  OrderType.LIMIT,
+  OrderType.STOP_MARKET,
+  OrderType.STOP_LOSS_LIMIT,
+  OrderType.TAKE_PROFIT_MARKET,
+  OrderType.TAKE_PROFIT_LIMIT,
+  OrderType.TRAILING_STOP_MARKET,
+];

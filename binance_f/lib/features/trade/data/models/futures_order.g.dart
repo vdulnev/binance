@@ -1,21 +1,21 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'spot_order.dart';
+part of 'futures_order.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_SpotOrder _$SpotOrderFromJson(Map<String, dynamic> json) => _SpotOrder(
+_FuturesOrder _$FuturesOrderFromJson(
+  Map<String, dynamic> json,
+) => _FuturesOrder(
   symbol: json['symbol'] as String,
   orderId: (json['orderId'] as num).toInt(),
   clientOrderId: json['clientOrderId'] as String,
   price: const DecimalConverter().fromJson(json['price'] as Object),
   origQty: const DecimalConverter().fromJson(json['origQty'] as Object),
   executedQty: const DecimalConverter().fromJson(json['executedQty'] as Object),
-  cummulativeQuoteQty: const DecimalConverter().fromJson(
-    json['cummulativeQuoteQty'] as Object,
-  ),
+  cumQuote: const DecimalConverter().fromJson(json['cumQuote'] as Object),
   status: $enumDecode(_$OrderStatusEnumMap, json['status']),
   type: $enumDecode(_$OrderTypeEnumMap, json['type']),
   side: $enumDecode(_$OrderSideEnumMap, json['side']),
@@ -24,17 +24,21 @@ _SpotOrder _$SpotOrderFromJson(Map<String, dynamic> json) => _SpotOrder(
     json['stopPrice'],
     const DecimalConverter().fromJson,
   ),
-  orderListId: (json['orderListId'] as num?)?.toInt(),
+  activatePrice: _$JsonConverterFromJson<Object, Decimal>(
+    json['activatePrice'],
+    const DecimalConverter().fromJson,
+  ),
+  priceRate: const NullableDecimalConverter().fromJson(json['priceRate']),
+  reduceOnly: json['reduceOnly'] as bool? ?? false,
+  closePosition: json['closePosition'] as bool? ?? false,
+  positionSide: json['positionSide'] as String?,
+  workingType: json['workingType'] as String?,
+  priceProtect: json['priceProtect'] as bool? ?? false,
   time: (json['time'] as num).toInt(),
   updateTime: (json['updateTime'] as num).toInt(),
-  fills:
-      (json['fills'] as List<dynamic>?)
-          ?.map((e) => OrderFill.fromJson(e as Map<String, dynamic>))
-          .toList() ??
-      const <OrderFill>[],
 );
 
-Map<String, dynamic> _$SpotOrderToJson(_SpotOrder instance) =>
+Map<String, dynamic> _$FuturesOrderToJson(_FuturesOrder instance) =>
     <String, dynamic>{
       'symbol': instance.symbol,
       'orderId': instance.orderId,
@@ -42,9 +46,7 @@ Map<String, dynamic> _$SpotOrderToJson(_SpotOrder instance) =>
       'price': const DecimalConverter().toJson(instance.price),
       'origQty': const DecimalConverter().toJson(instance.origQty),
       'executedQty': const DecimalConverter().toJson(instance.executedQty),
-      'cummulativeQuoteQty': const DecimalConverter().toJson(
-        instance.cummulativeQuoteQty,
-      ),
+      'cumQuote': const DecimalConverter().toJson(instance.cumQuote),
       'status': _$OrderStatusEnumMap[instance.status]!,
       'type': _$OrderTypeEnumMap[instance.type]!,
       'side': _$OrderSideEnumMap[instance.side]!,
@@ -53,10 +55,18 @@ Map<String, dynamic> _$SpotOrderToJson(_SpotOrder instance) =>
         instance.stopPrice,
         const DecimalConverter().toJson,
       ),
-      'orderListId': instance.orderListId,
+      'activatePrice': _$JsonConverterToJson<Object, Decimal>(
+        instance.activatePrice,
+        const DecimalConverter().toJson,
+      ),
+      'priceRate': const NullableDecimalConverter().toJson(instance.priceRate),
+      'reduceOnly': instance.reduceOnly,
+      'closePosition': instance.closePosition,
+      'positionSide': instance.positionSide,
+      'workingType': instance.workingType,
+      'priceProtect': instance.priceProtect,
       'time': instance.time,
       'updateTime': instance.updateTime,
-      'fills': instance.fills,
     };
 
 const _$OrderStatusEnumMap = {
@@ -101,20 +111,3 @@ Json? _$JsonConverterToJson<Json, Value>(
   Value? value,
   Json? Function(Value value) toJson,
 ) => value == null ? null : toJson(value);
-
-_OrderFill _$OrderFillFromJson(Map<String, dynamic> json) => _OrderFill(
-  price: const DecimalConverter().fromJson(json['price'] as Object),
-  qty: const DecimalConverter().fromJson(json['qty'] as Object),
-  commission: const DecimalConverter().fromJson(json['commission'] as Object),
-  commissionAsset: json['commissionAsset'] as String,
-  tradeId: (json['tradeId'] as num?)?.toInt(),
-);
-
-Map<String, dynamic> _$OrderFillToJson(_OrderFill instance) =>
-    <String, dynamic>{
-      'price': const DecimalConverter().toJson(instance.price),
-      'qty': const DecimalConverter().toJson(instance.qty),
-      'commission': const DecimalConverter().toJson(instance.commission),
-      'commissionAsset': instance.commissionAsset,
-      'tradeId': instance.tradeId,
-    };

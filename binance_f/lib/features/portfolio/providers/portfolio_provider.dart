@@ -244,7 +244,8 @@ class PortfolioNotifier extends AsyncNotifier<PortfolioSnapshot> {
           ),
         );
       case SpotOrderUpdate():
-        // Order updates are handled by the open-orders provider, not
+      case FuturesOrderUpdate():
+        // Order updates are handled by the open-orders providers, not
         // the portfolio provider.
         break;
     }
