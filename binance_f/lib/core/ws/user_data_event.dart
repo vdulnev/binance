@@ -1,16 +1,17 @@
+import 'package:decimal/decimal.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../features/portfolio/data/models/futures_asset_balance.dart';
 import '../../features/portfolio/data/models/futures_position.dart';
 import '../../features/portfolio/data/models/spot_balance.dart';
+import '../../features/trade/data/models/order_enums.dart';
 
 part 'user_data_event.freezed.dart';
 
-/// Phase 3 slice of events emitted by the user data stream.
+/// Events emitted by the user data stream.
 ///
-/// Only the portfolio-relevant events are modeled here — Binance also
-/// pushes order / execution / margin-call events via the same stream but
-/// those arrive in Phases 5 and 6 alongside the trading UI.
+/// Phase 3: portfolio-relevant events (account updates).
+/// Phase 5: spot order execution reports.
 @freezed
 sealed class UserDataEvent with _$UserDataEvent {
   const UserDataEvent._();
@@ -28,4 +29,25 @@ sealed class UserDataEvent with _$UserDataEvent {
     required List<FuturesAssetBalance> assets,
     required List<FuturesPosition> positions,
   }) = FuturesAccountUpdate;
+
+  /// Spot `executionReport` — pushed on every order lifecycle event
+  /// (NEW, PARTIALLY_FILLED, FILLED, CANCELED, REJECTED, EXPIRED).
+  /// The open-orders provider uses this to keep its list in sync without
+  /// REST polling.
+  const factory UserDataEvent.spotOrderUpdate({
+    required String symbol,
+    required int orderId,
+    required String clientOrderId,
+    required OrderSide side,
+    required OrderType orderType,
+    required OrderStatus status,
+    required Decimal price,
+    required Decimal origQty,
+    required Decimal executedQty,
+    required Decimal cummulativeQuoteQty,
+    TimeInForce? timeInForce,
+    Decimal? stopPrice,
+    required int time,
+    required int updateTime,
+  }) = SpotOrderUpdate;
 }

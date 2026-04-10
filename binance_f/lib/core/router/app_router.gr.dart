@@ -43,6 +43,58 @@ class LoginRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [OrderTicketScreen]
+class OrderTicketRoute extends PageRouteInfo<OrderTicketRouteArgs> {
+  OrderTicketRoute({
+    Key? key,
+    required String symbol,
+    List<PageRouteInfo>? children,
+  }) : super(
+         OrderTicketRoute.name,
+         args: OrderTicketRouteArgs(key: key, symbol: symbol),
+         rawPathParams: {'symbol': symbol},
+         initialChildren: children,
+       );
+
+  static const String name = 'OrderTicketRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final pathParams = data.inheritedPathParams;
+      final args = data.argsAs<OrderTicketRouteArgs>(
+        orElse: () =>
+            OrderTicketRouteArgs(symbol: pathParams.getString('symbol')),
+      );
+      return OrderTicketScreen(key: args.key, symbol: args.symbol);
+    },
+  );
+}
+
+class OrderTicketRouteArgs {
+  const OrderTicketRouteArgs({this.key, required this.symbol});
+
+  final Key? key;
+
+  final String symbol;
+
+  @override
+  String toString() {
+    return 'OrderTicketRouteArgs{key: $key, symbol: $symbol}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! OrderTicketRouteArgs) return false;
+    return key == other.key && symbol == other.symbol;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ symbol.hashCode;
+}
+
+/// generated route for
 /// [SymbolDetailScreen]
 class SymbolDetailRoute extends PageRouteInfo<SymbolDetailRouteArgs> {
   SymbolDetailRoute({

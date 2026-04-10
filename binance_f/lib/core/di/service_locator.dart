@@ -8,6 +8,7 @@ import '../../features/markets/data/market_ws_manager.dart';
 import '../../features/markets/data/markets_repository.dart';
 import '../../features/orderbook/data/orderbook_repository.dart';
 import '../../features/portfolio/data/portfolio_repository.dart';
+import '../../features/trade/data/spot_trade_repository.dart';
 import '../api/binance_client.dart';
 import '../api/signing_interceptor.dart';
 import '../auth/credentials_manager.dart';
@@ -151,6 +152,13 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<OrderBookRepository>(
     () =>
         BinanceOrderBookRepository(spotDio: () => sl<Dio>(instanceName: kSpot)),
+  );
+
+  sl.registerLazySingleton<SpotTradeRepository>(
+    () => BinanceSpotTradeRepository(
+      spotDio: () => sl<Dio>(instanceName: kSpot),
+      sessionManager: sl<SessionManager>(),
+    ),
   );
 
   // Router

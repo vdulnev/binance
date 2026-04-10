@@ -3,11 +3,13 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/router/app_router.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../../markets/data/models/ticker_24h.dart';
 import '../../markets/providers/tickers_provider.dart';
 import '../../orderbook/widgets/order_book_widget.dart';
 import '../../orderbook/widgets/recent_trades_widget.dart';
+import '../../trade/widgets/open_orders_widget.dart';
 
 /// Full-screen detail view for a single trading symbol.
 ///
@@ -34,7 +36,7 @@ class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -58,6 +60,7 @@ class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen>
           tabs: const [
             Tab(text: 'Order Book'),
             Tab(text: 'Trades'),
+            Tab(text: 'Orders'),
           ],
         ),
       ),
@@ -70,10 +73,16 @@ class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen>
               children: [
                 OrderBookWidget(symbol: symbol),
                 RecentTradesWidget(symbol: symbol),
+                OpenOrdersWidget(symbol: symbol),
               ],
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.router.push(OrderTicketRoute(symbol: symbol)),
+        icon: const Icon(Icons.add),
+        label: const Text('Trade'),
       ),
     );
   }

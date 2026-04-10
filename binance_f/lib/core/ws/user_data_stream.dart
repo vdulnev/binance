@@ -9,6 +9,7 @@ import '../../features/auth/data/auth_repository.dart' show DioProvider;
 import '../../features/portfolio/data/models/futures_asset_balance.dart';
 import '../../features/portfolio/data/models/futures_position.dart';
 import '../../features/portfolio/data/models/spot_balance.dart';
+import '../../features/trade/data/models/order_enums.dart';
 import '../env/env_manager.dart';
 import '../models/app_exception.dart';
 import 'user_data_event.dart';
@@ -266,8 +267,16 @@ class UserDataStream {
   }
 
   void _onSpotFrame(Map<String, dynamic> frame) {
-    final eventType = frame['e'];
-    if (eventType != 'outboundAccountPosition') return;
+    final eventType = frame['e'] as String?;
+    switch (eventType) {
+      case 'outboundAccountPosition':
+        _onSpotAccountUpdate(frame);
+      case 'executionReport':
+        _onSpotExecutionReport(frame);
+    }
+  }
+
+  void _onSpotAccountUpdate(Map<String, dynamic> frame) {
     final raw = (frame['B'] as List?) ?? const [];
     final balances = raw
         .whereType<Map<String, dynamic>>()
@@ -280,6 +289,48 @@ class UserDataStream {
         )
         .toList(growable: false);
     _events.add(UserDataEvent.accountUpdate(balances: balances));
+  }
+
+  void _onSpotExecutionReport(Map<String, dynamic> frame) {
+    Decimal d(String key) => Decimal.parse((frame[key] ?? '0').toString());
+
+    final statusStr = frame['X'] as String? ?? '';
+    final typeStr = frame['o'] as String? ?? '';
+    final sideStr = frame['S'] as String? ?? '';
+    final tifStr = frame['f'] as String?;
+
+    _events.add(
+      UserDataEvent.spotOrderUpdate(
+        symbol: frame['s'] as String? ?? '',
+        orderId: (frame['i'] as num?)?.toInt() ?? 0,
+        clientOrderId: frame['c'] as String? ?? '',
+        side: OrderSide.values.firstWhere(
+          (e) => e.name == sideStr,
+          orElse: () => OrderSide.BUY,
+        ),
+        orderType: OrderType.values.firstWhere(
+          (e) => e.name == typeStr,
+          orElse: () => OrderType.MARKET,
+        ),
+        status: OrderStatus.values.firstWhere(
+          (e) => e.name == statusStr,
+          orElse: () => OrderStatus.NEW,
+        ),
+        price: d('p'),
+        origQty: d('q'),
+        executedQty: d('z'),
+        cummulativeQuoteQty: d('Z'),
+        timeInForce: tifStr != null
+            ? TimeInForce.values.firstWhere(
+                (e) => e.name == tifStr,
+                orElse: () => TimeInForce.GTC,
+              )
+            : null,
+        stopPrice: frame['P'] != null ? d('P') : null,
+        time: (frame['T'] as num?)?.toInt() ?? 0,
+        updateTime: (frame['E'] as num?)?.toInt() ?? 0,
+      ),
+    );
   }
 
   void _onFuturesFrame(Map<String, dynamic> frame) {

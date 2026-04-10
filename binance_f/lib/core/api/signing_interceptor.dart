@@ -190,7 +190,12 @@ class SigningInterceptor extends Interceptor {
       final localBefore = DateTime.now().millisecondsSinceEpoch;
       final response = await dio.get<Map<String, dynamic>>('/api/v3/time');
       final localAfter = DateTime.now().millisecondsSinceEpoch;
-      final serverTime = response.data!['serverTime'] as int;
+      final serverTime = response.data?['serverTime'] as int?;
+      if (serverTime == null) {
+        // Response body missing or malformed — fall back to local clock.
+        _timeSynced = true;
+        return;
+      }
       final localTime = (localBefore + localAfter) ~/ 2;
       _timeOffset = serverTime - localTime;
       _timeSynced = true;
