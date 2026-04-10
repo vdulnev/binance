@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import timber.log.Timber
 import com.example.binance_a.core.network.AuthInterceptor
 import com.example.binance_a.core.network.NetworkModule
 import com.example.binance_a.core.network.TimeSyncManager
@@ -24,6 +25,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Timber.d("MainActivity onCreate")
         secureStorage = SecureStorage(this)
         
         val timeSyncManager = TimeSyncManager()
@@ -35,6 +37,9 @@ class MainActivity : ComponentActivity() {
         
         loginViewModel = LoginViewModel(secureStorage, verifyUseCase, timeSyncManager)
 
+        val initialLoggedInState = secureStorage.isLoggedIn()
+        Timber.i("Initial isLoggedIn state: $initialLoggedInState")
+
         enableEdgeToEdge()
         setContent {
             BinanceATheme {
@@ -43,11 +48,41 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     com.example.binance_a.presentation.navigation.AppNavHost(
-                        isLoggedIn = secureStorage.isLoggedIn(), 
-                        loginViewModel = loginViewModel
+                        isLoggedIn = initialLoggedInState, 
+                        loginViewModel = loginViewModel,
+                        onLogout = {
+                            Timber.i("Logout requested from AppNavHost")
+                            secureStorage.clear()
+                            // Note: Realistically, you'd trigger navigation or activity restart
+                        }
                     )
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Timber.d("MainActivity onStart")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Timber.d("MainActivity onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Timber.d("MainActivity onPause")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Timber.d("MainActivity onStop")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Timber.d("MainActivity onDestroy")
     }
 }

@@ -1,12 +1,14 @@
 package com.example.binance_a.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.NavEntry
 import kotlinx.serialization.Serializable
+import timber.log.Timber
 import com.example.binance_a.presentation.login.LoginScreen
 import com.example.binance_a.presentation.login.LoginViewModel
 import com.example.binance_a.presentation.ui.alerts.PriceAlertsScreen
@@ -28,6 +30,10 @@ fun AppNavHost(
     val initialEntry = if (isLoggedIn) AppRoute.Home else AppRoute.Login
     val backStack = rememberNavBackStack(initialEntry)
 
+    LaunchedEffect(backStack.lastOrNull()) {
+        Timber.d("Navigated to: ${backStack.lastOrNull()?.javaClass?.simpleName}")
+    }
+
     NavDisplay(
         backStack = backStack,
         modifier = modifier
@@ -38,11 +44,17 @@ fun AppNavHost(
                     LoginScreen(
                         viewModel = loginViewModel,
                         onLoginSuccess = {
+                            Timber.i("Login flow complete. Navigating to Home.")
                             backStack.add(AppRoute.Home)
                         }
                     )
                 }
-                AppRoute.Home -> HomeScreen(onLogout = onLogout)
+                AppRoute.Home -> HomeScreen(
+                    onLogout = {
+                        Timber.i("Logout triggered. Navigating to Login.")
+                        onLogout()
+                    }
+                )
                 AppRoute.Portfolio -> PortfolioScreen()
                 AppRoute.Market -> MarketScreen()
                 AppRoute.Trade -> TradeScreen()
@@ -50,7 +62,9 @@ fun AppNavHost(
                 AppRoute.Favorites -> FavoritesScreen()
                 AppRoute.PriceAlerts -> PriceAlertsScreen()
                 AppRoute.Settings -> SettingsScreen()
-                else -> {}
+                else -> {
+                    Timber.w("Unknown route encountered: $key")
+                }
             }
         }
     }
