@@ -10,6 +10,7 @@ import '../../markets/providers/tickers_provider.dart';
 import '../../orderbook/widgets/order_book_widget.dart';
 import '../../orderbook/widgets/recent_trades_widget.dart';
 import '../../trade/widgets/open_orders_widget.dart';
+import '../../chart/widgets/chart_widget.dart';
 
 /// Full-screen detail view for a single trading symbol.
 ///
@@ -36,7 +37,7 @@ class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -58,6 +59,7 @@ class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
+            Tab(text: 'Chart'),
             Tab(text: 'Order Book'),
             Tab(text: 'Trades'),
             Tab(text: 'Orders'),
@@ -71,6 +73,7 @@ class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
+                ChartWidget(symbol: symbol),
                 OrderBookWidget(symbol: symbol),
                 RecentTradesWidget(symbol: symbol),
                 OpenOrdersWidget(symbol: symbol),

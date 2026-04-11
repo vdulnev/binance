@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:talker/talker.dart';
 
 import '../../features/auth/data/auth_repository.dart';
+import '../../features/chart/data/chart_repository.dart';
 import '../../features/favorites/data/favorites_repository.dart';
 import '../../features/markets/data/market_ws_manager.dart';
 import '../../features/markets/data/markets_repository.dart';
@@ -143,6 +144,13 @@ Future<void> initServiceLocator() async {
       spotDio: () => sl<Dio>(instanceName: kSpot),
       futuresDio: () => sl<Dio>(instanceName: kFutures),
       database: sl<AppDatabase>(),
+    ),
+  );
+
+  sl.registerLazySingleton<ChartRepository>(
+    () => BinanceChartRepository(
+      spotDio: () => sl<Dio>(instanceName: kSpot),
+      futuresDio: () => sl<Dio>(instanceName: kFutures),
     ),
   );
 
