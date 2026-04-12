@@ -7,11 +7,7 @@ import '../providers/chart_settings_provider.dart';
 import 'popup_info_view.dart';
 
 class ChartWidget extends ConsumerStatefulWidget {
-  const ChartWidget({
-    super.key,
-    required this.symbol,
-    this.market = 'spot',
-  });
+  const ChartWidget({super.key, required this.symbol, this.market = 'spot'});
 
   final String symbol;
   final String market;
@@ -22,9 +18,21 @@ class ChartWidget extends ConsumerStatefulWidget {
 
 class _ChartWidgetState extends ConsumerState<ChartWidget> {
   static const _intervals = [
-    '1m', '3m', '5m', '15m', '30m',
-    '1h', '2h', '4h', '6h', '8h', '12h',
-    '1d', '3d', '1w', '1M'
+    '1m',
+    '3m',
+    '5m',
+    '15m',
+    '30m',
+    '1h',
+    '2h',
+    '4h',
+    '6h',
+    '8h',
+    '12h',
+    '1d',
+    '3d',
+    '1w',
+    '1M',
   ];
 
   @override
@@ -53,8 +61,9 @@ class _ChartWidgetState extends ConsumerState<ChartWidget> {
           isTrendLine: settings.isTrendLine,
           onMainChanged: (val) =>
               ref.read(chartSettingsProvider.notifier).setMainIndicator(val),
-          onSecondaryChanged: (val) =>
-              ref.read(chartSettingsProvider.notifier).setSecondaryIndicator(val),
+          onSecondaryChanged: (val) => ref
+              .read(chartSettingsProvider.notifier)
+              .setSecondaryIndicator(val),
           onTrendLineToggled: () =>
               ref.read(chartSettingsProvider.notifier).toggleTrendLine(),
         ),
@@ -172,7 +181,8 @@ class _IndicatorsToolbar extends StatelessWidget {
             label: 'Sub',
             options: SecondaryIndicatorType.values,
             selected: secondaryIndicator,
-            onChanged: (val) => onSecondaryChanged(val as SecondaryIndicatorType),
+            onChanged: (val) =>
+                onSecondaryChanged(val as SecondaryIndicatorType),
           ),
           const SizedBox(width: 16),
           _StatelessToggleButton(
@@ -205,9 +215,9 @@ class _IndicatorGroup extends StatelessWidget {
       children: [
         Text(
           '$label:',
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(width: 4),
         ...options.map((o) {
@@ -220,25 +230,20 @@ class _IndicatorGroup extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                backgroundColor:
-                    isSelected
-                        ? Theme.of(context).colorScheme.primaryContainer
-                        : null,
-                side:
-                    isSelected
-                        ? BorderSide(
-                          color: Theme.of(context).colorScheme.primary,
-                        )
-                        : null,
+                backgroundColor: isSelected
+                    ? Theme.of(context).colorScheme.primaryContainer
+                    : null,
+                side: isSelected
+                    ? BorderSide(color: Theme.of(context).colorScheme.primary)
+                    : null,
               ),
               child: Text(
                 name,
                 style: TextStyle(
                   fontSize: 10,
-                  color:
-                      isSelected
-                          ? Theme.of(context).colorScheme.onPrimaryContainer
-                          : null,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.onPrimaryContainer
+                      : null,
                 ),
               ),
             ),

@@ -96,6 +96,22 @@ class LoginRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [OrderHistoryScreen]
+class OrderHistoryRoute extends PageRouteInfo<void> {
+  const OrderHistoryRoute({List<PageRouteInfo>? children})
+    : super(OrderHistoryRoute.name, initialChildren: children);
+
+  static const String name = 'OrderHistoryRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const OrderHistoryScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [OrderTicketScreen]
 class OrderTicketRoute extends PageRouteInfo<OrderTicketRouteArgs> {
   OrderTicketRoute({

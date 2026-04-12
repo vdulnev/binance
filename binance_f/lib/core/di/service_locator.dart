@@ -5,6 +5,7 @@ import 'package:talker/talker.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/chart/data/chart_repository.dart';
 import '../../features/favorites/data/favorites_repository.dart';
+import '../../features/history/data/order_history_repository.dart';
 import '../../features/markets/data/market_ws_manager.dart';
 import '../../features/markets/data/markets_repository.dart';
 import '../../features/orderbook/data/orderbook_repository.dart';
@@ -16,6 +17,7 @@ import '../api/signing_interceptor.dart';
 import '../auth/credentials_manager.dart';
 import '../auth/session_manager.dart';
 import '../db/app_database.dart';
+import '../db/order_history_cache.dart';
 import '../db/portfolio_cache.dart';
 import '../env/env_manager.dart';
 import '../logging/app_talker.dart';
@@ -85,6 +87,9 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<PortfolioCache>(
     () => PortfolioCache(database: sl<AppDatabase>()),
   );
+  sl.registerLazySingleton<OrderHistoryCache>(
+    () => OrderHistoryCache(database: sl<AppDatabase>()),
+  );
 
   // Market WebSocket manager — per-symbol WS streams (ticker, depth,
   // trade, kline). Logout calls `unsubscribeAll()` via SessionManager.
@@ -116,6 +121,7 @@ Future<void> initServiceLocator() async {
       talker: sl<Talker>(),
       userDataStream: sl<UserDataStream>(),
       portfolioCache: sl<PortfolioCache>(),
+      orderHistoryCache: sl<OrderHistoryCache>(),
       marketWsManager: sl<MarketWsManager>(),
       favoritesRepository: sl<FavoritesRepository>(),
     ),
@@ -172,6 +178,14 @@ Future<void> initServiceLocator() async {
 
   sl.registerLazySingleton<FuturesTradeRepository>(
     () => BinanceFuturesTradeRepository(
+      futuresDio: () => sl<Dio>(instanceName: kFutures),
+      sessionManager: sl<SessionManager>(),
+    ),
+  );
+
+  sl.registerLazySingleton<OrderHistoryRepository>(
+    () => BinanceOrderHistoryRepository(
+      spotDio: () => sl<Dio>(instanceName: kSpot),
       futuresDio: () => sl<Dio>(instanceName: kFutures),
       sessionManager: sl<SessionManager>(),
     ),

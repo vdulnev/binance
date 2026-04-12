@@ -992,6 +992,419 @@ class CachedSymbolsCompanion extends UpdateCompanion<CachedSymbol> {
   }
 }
 
+class $CachedOrdersTable extends CachedOrders
+    with TableInfo<$CachedOrdersTable, CachedOrder> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CachedOrdersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _orderIdMeta = const VerificationMeta(
+    'orderId',
+  );
+  @override
+  late final GeneratedColumn<int> orderId = GeneratedColumn<int>(
+    'order_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _symbolMeta = const VerificationMeta('symbol');
+  @override
+  late final GeneratedColumn<String> symbol = GeneratedColumn<String>(
+    'symbol',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _marketMeta = const VerificationMeta('market');
+  @override
+  late final GeneratedColumn<String> market = GeneratedColumn<String>(
+    'market',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _orderJsonMeta = const VerificationMeta(
+    'orderJson',
+  );
+  @override
+  late final GeneratedColumn<String> orderJson = GeneratedColumn<String>(
+    'order_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _orderTimeMeta = const VerificationMeta(
+    'orderTime',
+  );
+  @override
+  late final GeneratedColumn<int> orderTime = GeneratedColumn<int>(
+    'order_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fetchedAtMeta = const VerificationMeta(
+    'fetchedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fetchedAt = GeneratedColumn<DateTime>(
+    'fetched_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    orderId,
+    symbol,
+    market,
+    orderJson,
+    orderTime,
+    fetchedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cached_orders';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CachedOrder> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('order_id')) {
+      context.handle(
+        _orderIdMeta,
+        orderId.isAcceptableOrUnknown(data['order_id']!, _orderIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_orderIdMeta);
+    }
+    if (data.containsKey('symbol')) {
+      context.handle(
+        _symbolMeta,
+        symbol.isAcceptableOrUnknown(data['symbol']!, _symbolMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_symbolMeta);
+    }
+    if (data.containsKey('market')) {
+      context.handle(
+        _marketMeta,
+        market.isAcceptableOrUnknown(data['market']!, _marketMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_marketMeta);
+    }
+    if (data.containsKey('order_json')) {
+      context.handle(
+        _orderJsonMeta,
+        orderJson.isAcceptableOrUnknown(data['order_json']!, _orderJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_orderJsonMeta);
+    }
+    if (data.containsKey('order_time')) {
+      context.handle(
+        _orderTimeMeta,
+        orderTime.isAcceptableOrUnknown(data['order_time']!, _orderTimeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_orderTimeMeta);
+    }
+    if (data.containsKey('fetched_at')) {
+      context.handle(
+        _fetchedAtMeta,
+        fetchedAt.isAcceptableOrUnknown(data['fetched_at']!, _fetchedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fetchedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {orderId, market};
+  @override
+  CachedOrder map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CachedOrder(
+      orderId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}order_id'],
+      )!,
+      symbol: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}symbol'],
+      )!,
+      market: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}market'],
+      )!,
+      orderJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}order_json'],
+      )!,
+      orderTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}order_time'],
+      )!,
+      fetchedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fetched_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CachedOrdersTable createAlias(String alias) {
+    return $CachedOrdersTable(attachedDatabase, alias);
+  }
+}
+
+class CachedOrder extends DataClass implements Insertable<CachedOrder> {
+  final int orderId;
+  final String symbol;
+  final String market;
+  final String orderJson;
+
+  /// Order creation time in ms since epoch — used for date filtering.
+  final int orderTime;
+  final DateTime fetchedAt;
+  const CachedOrder({
+    required this.orderId,
+    required this.symbol,
+    required this.market,
+    required this.orderJson,
+    required this.orderTime,
+    required this.fetchedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['order_id'] = Variable<int>(orderId);
+    map['symbol'] = Variable<String>(symbol);
+    map['market'] = Variable<String>(market);
+    map['order_json'] = Variable<String>(orderJson);
+    map['order_time'] = Variable<int>(orderTime);
+    map['fetched_at'] = Variable<DateTime>(fetchedAt);
+    return map;
+  }
+
+  CachedOrdersCompanion toCompanion(bool nullToAbsent) {
+    return CachedOrdersCompanion(
+      orderId: Value(orderId),
+      symbol: Value(symbol),
+      market: Value(market),
+      orderJson: Value(orderJson),
+      orderTime: Value(orderTime),
+      fetchedAt: Value(fetchedAt),
+    );
+  }
+
+  factory CachedOrder.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CachedOrder(
+      orderId: serializer.fromJson<int>(json['orderId']),
+      symbol: serializer.fromJson<String>(json['symbol']),
+      market: serializer.fromJson<String>(json['market']),
+      orderJson: serializer.fromJson<String>(json['orderJson']),
+      orderTime: serializer.fromJson<int>(json['orderTime']),
+      fetchedAt: serializer.fromJson<DateTime>(json['fetchedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'orderId': serializer.toJson<int>(orderId),
+      'symbol': serializer.toJson<String>(symbol),
+      'market': serializer.toJson<String>(market),
+      'orderJson': serializer.toJson<String>(orderJson),
+      'orderTime': serializer.toJson<int>(orderTime),
+      'fetchedAt': serializer.toJson<DateTime>(fetchedAt),
+    };
+  }
+
+  CachedOrder copyWith({
+    int? orderId,
+    String? symbol,
+    String? market,
+    String? orderJson,
+    int? orderTime,
+    DateTime? fetchedAt,
+  }) => CachedOrder(
+    orderId: orderId ?? this.orderId,
+    symbol: symbol ?? this.symbol,
+    market: market ?? this.market,
+    orderJson: orderJson ?? this.orderJson,
+    orderTime: orderTime ?? this.orderTime,
+    fetchedAt: fetchedAt ?? this.fetchedAt,
+  );
+  CachedOrder copyWithCompanion(CachedOrdersCompanion data) {
+    return CachedOrder(
+      orderId: data.orderId.present ? data.orderId.value : this.orderId,
+      symbol: data.symbol.present ? data.symbol.value : this.symbol,
+      market: data.market.present ? data.market.value : this.market,
+      orderJson: data.orderJson.present ? data.orderJson.value : this.orderJson,
+      orderTime: data.orderTime.present ? data.orderTime.value : this.orderTime,
+      fetchedAt: data.fetchedAt.present ? data.fetchedAt.value : this.fetchedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedOrder(')
+          ..write('orderId: $orderId, ')
+          ..write('symbol: $symbol, ')
+          ..write('market: $market, ')
+          ..write('orderJson: $orderJson, ')
+          ..write('orderTime: $orderTime, ')
+          ..write('fetchedAt: $fetchedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(orderId, symbol, market, orderJson, orderTime, fetchedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CachedOrder &&
+          other.orderId == this.orderId &&
+          other.symbol == this.symbol &&
+          other.market == this.market &&
+          other.orderJson == this.orderJson &&
+          other.orderTime == this.orderTime &&
+          other.fetchedAt == this.fetchedAt);
+}
+
+class CachedOrdersCompanion extends UpdateCompanion<CachedOrder> {
+  final Value<int> orderId;
+  final Value<String> symbol;
+  final Value<String> market;
+  final Value<String> orderJson;
+  final Value<int> orderTime;
+  final Value<DateTime> fetchedAt;
+  final Value<int> rowid;
+  const CachedOrdersCompanion({
+    this.orderId = const Value.absent(),
+    this.symbol = const Value.absent(),
+    this.market = const Value.absent(),
+    this.orderJson = const Value.absent(),
+    this.orderTime = const Value.absent(),
+    this.fetchedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CachedOrdersCompanion.insert({
+    required int orderId,
+    required String symbol,
+    required String market,
+    required String orderJson,
+    required int orderTime,
+    required DateTime fetchedAt,
+    this.rowid = const Value.absent(),
+  }) : orderId = Value(orderId),
+       symbol = Value(symbol),
+       market = Value(market),
+       orderJson = Value(orderJson),
+       orderTime = Value(orderTime),
+       fetchedAt = Value(fetchedAt);
+  static Insertable<CachedOrder> custom({
+    Expression<int>? orderId,
+    Expression<String>? symbol,
+    Expression<String>? market,
+    Expression<String>? orderJson,
+    Expression<int>? orderTime,
+    Expression<DateTime>? fetchedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (orderId != null) 'order_id': orderId,
+      if (symbol != null) 'symbol': symbol,
+      if (market != null) 'market': market,
+      if (orderJson != null) 'order_json': orderJson,
+      if (orderTime != null) 'order_time': orderTime,
+      if (fetchedAt != null) 'fetched_at': fetchedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CachedOrdersCompanion copyWith({
+    Value<int>? orderId,
+    Value<String>? symbol,
+    Value<String>? market,
+    Value<String>? orderJson,
+    Value<int>? orderTime,
+    Value<DateTime>? fetchedAt,
+    Value<int>? rowid,
+  }) {
+    return CachedOrdersCompanion(
+      orderId: orderId ?? this.orderId,
+      symbol: symbol ?? this.symbol,
+      market: market ?? this.market,
+      orderJson: orderJson ?? this.orderJson,
+      orderTime: orderTime ?? this.orderTime,
+      fetchedAt: fetchedAt ?? this.fetchedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (orderId.present) {
+      map['order_id'] = Variable<int>(orderId.value);
+    }
+    if (symbol.present) {
+      map['symbol'] = Variable<String>(symbol.value);
+    }
+    if (market.present) {
+      map['market'] = Variable<String>(market.value);
+    }
+    if (orderJson.present) {
+      map['order_json'] = Variable<String>(orderJson.value);
+    }
+    if (orderTime.present) {
+      map['order_time'] = Variable<int>(orderTime.value);
+    }
+    if (fetchedAt.present) {
+      map['fetched_at'] = Variable<DateTime>(fetchedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedOrdersCompanion(')
+          ..write('orderId: $orderId, ')
+          ..write('symbol: $symbol, ')
+          ..write('market: $market, ')
+          ..write('orderJson: $orderJson, ')
+          ..write('orderTime: $orderTime, ')
+          ..write('fetchedAt: $fetchedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1000,6 +1413,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $FavoritesTable favorites = $FavoritesTable(this);
   late final $CachedSymbolsTable cachedSymbols = $CachedSymbolsTable(this);
+  late final $CachedOrdersTable cachedOrders = $CachedOrdersTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1008,6 +1422,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     cachedPortfolio,
     favorites,
     cachedSymbols,
+    cachedOrders,
   ];
 }
 
@@ -1577,6 +1992,225 @@ typedef $$CachedSymbolsTableProcessedTableManager =
       CachedSymbol,
       PrefetchHooks Function()
     >;
+typedef $$CachedOrdersTableCreateCompanionBuilder =
+    CachedOrdersCompanion Function({
+      required int orderId,
+      required String symbol,
+      required String market,
+      required String orderJson,
+      required int orderTime,
+      required DateTime fetchedAt,
+      Value<int> rowid,
+    });
+typedef $$CachedOrdersTableUpdateCompanionBuilder =
+    CachedOrdersCompanion Function({
+      Value<int> orderId,
+      Value<String> symbol,
+      Value<String> market,
+      Value<String> orderJson,
+      Value<int> orderTime,
+      Value<DateTime> fetchedAt,
+      Value<int> rowid,
+    });
+
+class $$CachedOrdersTableFilterComposer
+    extends Composer<_$AppDatabase, $CachedOrdersTable> {
+  $$CachedOrdersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get orderId => $composableBuilder(
+    column: $table.orderId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get symbol => $composableBuilder(
+    column: $table.symbol,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get market => $composableBuilder(
+    column: $table.market,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get orderJson => $composableBuilder(
+    column: $table.orderJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get orderTime => $composableBuilder(
+    column: $table.orderTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CachedOrdersTableOrderingComposer
+    extends Composer<_$AppDatabase, $CachedOrdersTable> {
+  $$CachedOrdersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get orderId => $composableBuilder(
+    column: $table.orderId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get symbol => $composableBuilder(
+    column: $table.symbol,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get market => $composableBuilder(
+    column: $table.market,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get orderJson => $composableBuilder(
+    column: $table.orderJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get orderTime => $composableBuilder(
+    column: $table.orderTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CachedOrdersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CachedOrdersTable> {
+  $$CachedOrdersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get orderId =>
+      $composableBuilder(column: $table.orderId, builder: (column) => column);
+
+  GeneratedColumn<String> get symbol =>
+      $composableBuilder(column: $table.symbol, builder: (column) => column);
+
+  GeneratedColumn<String> get market =>
+      $composableBuilder(column: $table.market, builder: (column) => column);
+
+  GeneratedColumn<String> get orderJson =>
+      $composableBuilder(column: $table.orderJson, builder: (column) => column);
+
+  GeneratedColumn<int> get orderTime =>
+      $composableBuilder(column: $table.orderTime, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fetchedAt =>
+      $composableBuilder(column: $table.fetchedAt, builder: (column) => column);
+}
+
+class $$CachedOrdersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CachedOrdersTable,
+          CachedOrder,
+          $$CachedOrdersTableFilterComposer,
+          $$CachedOrdersTableOrderingComposer,
+          $$CachedOrdersTableAnnotationComposer,
+          $$CachedOrdersTableCreateCompanionBuilder,
+          $$CachedOrdersTableUpdateCompanionBuilder,
+          (
+            CachedOrder,
+            BaseReferences<_$AppDatabase, $CachedOrdersTable, CachedOrder>,
+          ),
+          CachedOrder,
+          PrefetchHooks Function()
+        > {
+  $$CachedOrdersTableTableManager(_$AppDatabase db, $CachedOrdersTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CachedOrdersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CachedOrdersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CachedOrdersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> orderId = const Value.absent(),
+                Value<String> symbol = const Value.absent(),
+                Value<String> market = const Value.absent(),
+                Value<String> orderJson = const Value.absent(),
+                Value<int> orderTime = const Value.absent(),
+                Value<DateTime> fetchedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CachedOrdersCompanion(
+                orderId: orderId,
+                symbol: symbol,
+                market: market,
+                orderJson: orderJson,
+                orderTime: orderTime,
+                fetchedAt: fetchedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int orderId,
+                required String symbol,
+                required String market,
+                required String orderJson,
+                required int orderTime,
+                required DateTime fetchedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => CachedOrdersCompanion.insert(
+                orderId: orderId,
+                symbol: symbol,
+                market: market,
+                orderJson: orderJson,
+                orderTime: orderTime,
+                fetchedAt: fetchedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CachedOrdersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CachedOrdersTable,
+      CachedOrder,
+      $$CachedOrdersTableFilterComposer,
+      $$CachedOrdersTableOrderingComposer,
+      $$CachedOrdersTableAnnotationComposer,
+      $$CachedOrdersTableCreateCompanionBuilder,
+      $$CachedOrdersTableUpdateCompanionBuilder,
+      (
+        CachedOrder,
+        BaseReferences<_$AppDatabase, $CachedOrdersTable, CachedOrder>,
+      ),
+      CachedOrder,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1587,4 +2221,6 @@ class $AppDatabaseManager {
       $$FavoritesTableTableManager(_db, _db.favorites);
   $$CachedSymbolsTableTableManager get cachedSymbols =>
       $$CachedSymbolsTableTableManager(_db, _db.cachedSymbols);
+  $$CachedOrdersTableTableManager get cachedOrders =>
+      $$CachedOrdersTableTableManager(_db, _db.cachedOrders);
 }

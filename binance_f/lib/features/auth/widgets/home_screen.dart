@@ -6,6 +6,7 @@ import '../../../core/di/service_locator.dart';
 import '../../../core/env/env.dart';
 import '../../../core/env/env_manager.dart';
 import '../../../core/router/app_router.dart';
+import '../../history/widgets/order_history_tab.dart';
 import '../../markets/widgets/markets_tab.dart';
 import '../../portfolio/providers/portfolio_provider.dart';
 import '../../portfolio/widgets/portfolio_tab.dart';
@@ -39,9 +40,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final env = sl<EnvManager>().current.env;
 
+    final titles = const ['Portfolio', 'Markets', 'History'];
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_currentIndex == 0 ? 'Portfolio' : 'Markets'),
+        title: Text(titles[_currentIndex]),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -64,7 +67,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       body: IndexedStack(
         index: _currentIndex,
-        children: const [PortfolioTab(), MarketsTab()],
+        children: const [PortfolioTab(), MarketsTab(), OrderHistoryTab()],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
@@ -81,6 +84,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: Icon(Icons.candlestick_chart_outlined),
             selectedIcon: Icon(Icons.candlestick_chart),
             label: 'Markets',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long),
+            label: 'History',
           ),
         ],
       ),

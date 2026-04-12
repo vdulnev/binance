@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../features/auth/widgets/home_screen.dart';
 import '../../features/auth/widgets/login_screen.dart';
+import '../../features/history/widgets/order_history_screen.dart';
 import '../../features/symbol/widgets/symbol_detail_screen.dart';
 import '../../features/trade/widgets/futures_order_ticket_screen.dart';
 import '../../features/trade/widgets/order_ticket_screen.dart';
@@ -32,6 +33,11 @@ class AppRouter extends RootStackRouter {
     AutoRoute(
       page: FuturesOrderTicketRoute.page,
       path: '/futures-trade/:symbol',
+      guards: [_authGuard],
+    ),
+    AutoRoute(
+      page: OrderHistoryRoute.page,
+      path: '/history',
       guards: [_authGuard],
     ),
     AutoRoute(page: LoginRoute.page, path: '/login'),

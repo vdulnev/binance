@@ -4,6 +4,7 @@ import 'package:talker/talker.dart';
 
 import '../../features/favorites/data/favorites_repository.dart';
 import '../../features/markets/data/market_ws_manager.dart';
+import '../db/order_history_cache.dart';
 import '../db/portfolio_cache.dart';
 import '../env/env_manager.dart';
 import '../models/app_exception.dart';
@@ -31,6 +32,7 @@ class SessionManager {
     required Talker talker,
     UserDataStream? userDataStream,
     PortfolioCache? portfolioCache,
+    OrderHistoryCache? orderHistoryCache,
     MarketWsManager? marketWsManager,
     FavoritesRepository? favoritesRepository,
   }) : _credentials = credentialsManager,
@@ -38,6 +40,7 @@ class SessionManager {
        _talker = talker,
        _userDataStream = userDataStream,
        _portfolioCache = portfolioCache,
+       _orderHistoryCache = orderHistoryCache,
        _marketWsManager = marketWsManager,
        _favoritesRepository = favoritesRepository;
 
@@ -46,6 +49,7 @@ class SessionManager {
   final Talker _talker;
   final UserDataStream? _userDataStream;
   final PortfolioCache? _portfolioCache;
+  final OrderHistoryCache? _orderHistoryCache;
   final MarketWsManager? _marketWsManager;
   final FavoritesRepository? _favoritesRepository;
 
@@ -156,6 +160,17 @@ class SessionManager {
           cacheResult.match(
             (err) => _talker.error('logout: portfolio cache clear failed', err),
             (_) => _talker.info('logout: portfolio cache cleared'),
+          );
+        }
+
+        // 6. Wipe cached order history (Phase 8).
+        final orderCache = _orderHistoryCache;
+        if (orderCache != null) {
+          final orderCacheResult = await orderCache.clear().run();
+          orderCacheResult.match(
+            (err) =>
+                _talker.error('logout: order history cache clear failed', err),
+            (_) => _talker.info('logout: order history cache cleared'),
           );
         }
 

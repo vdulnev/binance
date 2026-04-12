@@ -46,12 +46,33 @@ class CachedSymbols extends Table {
   Set<Column<Object>> get primaryKey => {symbol, market};
 }
 
+/// Cached order history for offline viewing (Phase 8 — FR-6.2, FR-9.1).
+///
+/// Each row stores one historical order (spot or futures) as JSON plus
+/// indexed fields for efficient querying by symbol, market, and date.
+class CachedOrders extends Table {
+  IntColumn get orderId => integer()();
+  TextColumn get symbol => text()();
+  TextColumn get market => text()(); // 'spot' or 'futures'
+  TextColumn get orderJson => text()();
+
+  /// Order creation time in ms since epoch — used for date filtering.
+  IntColumn get orderTime => integer()();
+
+  DateTimeColumn get fetchedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {orderId, market};
+}
+
 /// The app's Drift database. Owned as a lazy singleton in get_it — see
 /// `lib/core/di/service_locator.dart`.
 ///
 /// Migrations are versioned — never edit a past migration, always add a
 /// new one.
-@DriftDatabase(tables: [CachedPortfolio, Favorites, CachedSymbols])
+@DriftDatabase(
+  tables: [CachedPortfolio, Favorites, CachedSymbols, CachedOrders],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -60,7 +81,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -71,6 +92,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 2) {
         await m.createTable(favorites);
         await m.createTable(cachedSymbols);
+      }
+      if (from < 3) {
+        await m.createTable(cachedOrders);
       }
     },
   );
