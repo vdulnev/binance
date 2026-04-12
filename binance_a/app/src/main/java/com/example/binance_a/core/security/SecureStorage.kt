@@ -42,8 +42,6 @@ class SecureStorage @Inject constructor(
 
     fun getApiSecret(): String? = sharedPreferences.getString(KEY_API_SECRET, null)
 
-    fun getEnvironment(): String? = sharedPreferences.getString(KEY_ENVIRONMENT, null)
-
     fun clear() {
         sharedPreferences.edit(commit = true) { clear() }
     }
