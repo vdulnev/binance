@@ -8,34 +8,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
-import com.example.binance_a.core.network.AuthInterceptor
-import com.example.binance_a.core.network.NetworkModule
-import com.example.binance_a.core.network.TimeSyncManager
 import com.example.binance_a.core.security.SecureStorage
-import com.example.binance_a.domain.usecase.VerifyCredentialsUseCase
-import com.example.binance_a.presentation.login.LoginViewModel
 import com.example.binance_a.presentation.ui.theme.BinanceATheme
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    // Temp direct init for testing UI
+    @Inject
     lateinit var secureStorage: SecureStorage
-    lateinit var loginViewModel: LoginViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Timber.d("MainActivity onCreate")
-        secureStorage = SecureStorage(this)
-        
-        val timeSyncManager = TimeSyncManager()
-        val authInterceptor = AuthInterceptor(secureStorage, timeSyncManager)
-        val okHttpClient = NetworkModule.provideOkHttpClient(authInterceptor, NetworkModule.provideLoggingInterceptor())
-        val retrofit = NetworkModule.provideRetrofit(okHttpClient)
-        val apiService = NetworkModule.provideBinanceApiService(retrofit)
-        val verifyUseCase = VerifyCredentialsUseCase(apiService)
-        
-        loginViewModel = LoginViewModel(secureStorage, verifyUseCase, timeSyncManager)
 
         val initialLoggedInState = secureStorage.isLoggedIn()
         Timber.i("Initial isLoggedIn state: $initialLoggedInState")
@@ -49,7 +36,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     com.example.binance_a.presentation.navigation.AppNavHost(
                         isLoggedIn = initialLoggedInState, 
-                        loginViewModel = loginViewModel,
                         onLogout = {
                             Timber.i("Logout requested from AppNavHost")
                             secureStorage.clear()

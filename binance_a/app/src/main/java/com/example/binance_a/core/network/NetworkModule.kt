@@ -2,15 +2,24 @@ package com.example.binance_a.core.network
 
 import com.example.binance_a.core.common.Constants
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import timber.log.Timber
+import javax.inject.Singleton
 
+@Module
+@InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    @Provides
+    @Singleton
     fun provideOkHttpClient(
         authInterceptor: AuthInterceptor,
         loggingInterceptor: HttpLoggingInterceptor
@@ -21,6 +30,8 @@ object NetworkModule {
             .build()
     }
 
+    @Provides
+    @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor { message ->
             if (message.startsWith("{") || message.startsWith("[")) {
@@ -42,6 +53,8 @@ object NetworkModule {
         }
     }
 
+    @Provides
+    @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         val json = Json {
             ignoreUnknownKeys = true
@@ -56,6 +69,8 @@ object NetworkModule {
             .build()
     }
 
+    @Provides
+    @Singleton
     fun provideBinanceApiService(retrofit: Retrofit): BinanceApiService {
         return retrofit.create(BinanceApiService::class.java)
     }

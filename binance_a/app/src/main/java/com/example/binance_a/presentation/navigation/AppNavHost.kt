@@ -3,6 +3,7 @@ package com.example.binance_a.presentation.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.NavKey
@@ -23,7 +24,6 @@ import com.example.binance_a.presentation.ui.trade.TradeScreen
 @Composable
 fun AppNavHost(
     isLoggedIn: Boolean,
-    loginViewModel: LoginViewModel,
     modifier: Modifier = Modifier,
     onLogout: () -> Unit = {}
 ) {
@@ -41,6 +41,7 @@ fun AppNavHost(
         NavEntry(key) {
             when (key) {
                 AppRoute.Login -> {
+                    val loginViewModel: LoginViewModel = hiltViewModel()
                     LoginScreen(
                         viewModel = loginViewModel,
                         onLoginSuccess = {

@@ -6,8 +6,9 @@ import com.example.binance_a.core.network.BinanceApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
 
-class VerifyCredentialsUseCase(
+class VerifyCredentialsUseCase @Inject constructor(
     private val apiService: BinanceApiService
 ) {
     suspend operator fun invoke(

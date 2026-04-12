@@ -3,8 +3,14 @@ package com.example.binance_a.core.security
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-class SecureStorage(
-    private val context: Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
+import androidx.core.content.edit
+
+@Singleton
+class SecureStorage @Inject constructor(
+    @ApplicationContext private val context: Context
 ) {
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
@@ -25,11 +31,11 @@ class SecureStorage(
     }
 
     fun saveCredentials(apiKey: String, apiSecret: String, environment: String) {
-        sharedPreferences.edit()
-            .putString(KEY_API_KEY, apiKey)
-            .putString(KEY_API_SECRET, apiSecret)
-            .putString(KEY_ENVIRONMENT, environment)
-            .commit()
+        sharedPreferences.edit(commit = true) {
+            putString(KEY_API_KEY, apiKey)
+                .putString(KEY_API_SECRET, apiSecret)
+                .putString(KEY_ENVIRONMENT, environment)
+        }
     }
 
     fun getApiKey(): String? = sharedPreferences.getString(KEY_API_KEY, null)
@@ -39,7 +45,7 @@ class SecureStorage(
     fun getEnvironment(): String? = sharedPreferences.getString(KEY_ENVIRONMENT, null)
 
     fun clear() {
-        sharedPreferences.edit().clear().commit()
+        sharedPreferences.edit(commit = true) { clear() }
     }
 
     fun isLoggedIn(): Boolean = getApiKey() != null && getApiSecret() != null

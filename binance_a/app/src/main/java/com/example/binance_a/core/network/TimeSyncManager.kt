@@ -1,8 +1,11 @@
 package com.example.binance_a.core.network
 
 import kotlin.time.Duration.Companion.minutes
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class TimeSyncManager {
+@Singleton
+class TimeSyncManager @Inject constructor() {
     @Volatile
     var offset: Long = 0L
         private set

@@ -6,8 +6,9 @@ import okhttp3.Response
 import timber.log.Timber
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
+import javax.inject.Inject
 
-class AuthInterceptor(
+class AuthInterceptor @Inject constructor(
     private val secureStorage: SecureStorage,
     private val timeSyncManager: TimeSyncManager
 ) : Interceptor {
