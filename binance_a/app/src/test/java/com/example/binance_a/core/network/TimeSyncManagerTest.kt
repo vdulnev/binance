@@ -1,5 +1,7 @@
 package com.example.binance_a.core.network
 
+import com.example.binance_a.core.logging.Logger
+import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -10,11 +12,13 @@ import kotlin.time.Duration.Companion.minutes
 
 class TimeSyncManagerTest {
 
+    private lateinit var logger: Logger
     private lateinit var timeSyncManager: TimeSyncManager
 
     @Before
     fun setup() {
-        timeSyncManager = TimeSyncManager()
+        logger = mockk(relaxed = true)
+        timeSyncManager = TimeSyncManager(logger)
     }
 
     @Test

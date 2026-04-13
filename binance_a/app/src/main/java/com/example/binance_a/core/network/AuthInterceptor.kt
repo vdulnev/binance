@@ -1,16 +1,17 @@
 package com.example.binance_a.core.network
 
+import com.example.binance_a.core.logging.Logger
 import com.example.binance_a.core.security.SecureStorage
 import okhttp3.Interceptor
 import okhttp3.Response
-import timber.log.Timber
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
 
 class AuthInterceptor @Inject constructor(
     private val secureStorage: SecureStorage,
-    private val timeSyncManager: TimeSyncManager
+    private val timeSyncManager: TimeSyncManager,
+    private val logger: Logger
 ) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -19,11 +20,11 @@ class AuthInterceptor @Inject constructor(
 
         // If no API key, proceed without signing (for public endpoints)
         if (apiKey.isNullOrEmpty()) {
-            Timber.v("No API key found in SecureStorage. Proceeding without signing request: ${originalRequest.url}")
+            logger.d("No API key found in SecureStorage. Proceeding without signing request: ${originalRequest.url}")
             return chain.proceed(originalRequest)
         }
 
-        Timber.d("Signing request: ${originalRequest.url.encodedPath}")
+        logger.d("Signing request: ${originalRequest.url.encodedPath}")
         val timestamp = timeSyncManager.getServerTimestamp()
         val url = originalRequest.url.newBuilder()
             .addQueryParameter("timestamp", timestamp.toString())
@@ -46,7 +47,7 @@ class AuthInterceptor @Inject constructor(
             .header("X-MBX-APIKEY", sanitizedApiKey)
             .build()
 
-        Timber.d("Request signed successfully. URL: $signedUrl")
+        logger.d("Request signed successfully. URL: $signedUrl")
         return chain.proceed(signedRequest)
     }
 

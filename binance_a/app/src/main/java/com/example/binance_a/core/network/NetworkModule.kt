@@ -11,7 +11,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import timber.log.Timber
+import com.example.binance_a.core.logging.Logger
 import javax.inject.Singleton
 
 @Module
@@ -32,7 +32,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
+    fun provideLoggingInterceptor(logger: Logger): HttpLoggingInterceptor {
         return HttpLoggingInterceptor { message ->
             if (message.startsWith("{") || message.startsWith("[")) {
                 try {
@@ -41,13 +41,13 @@ object NetworkModule {
                     } else {
                         org.json.JSONArray(message).toString(4)
                     }
-                    Timber.tag("OkHttp").d(formattedJson)
+                    logger.d(formattedJson)
                     return@HttpLoggingInterceptor
                 } catch (_: Exception) {
                     // Ignored, fall back to normal logging
                 }
             }
-            Timber.tag("OkHttp").d(message)
+            logger.d(message)
         }.apply {
             level = HttpLoggingInterceptor.Level.BODY
         }

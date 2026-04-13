@@ -1,5 +1,6 @@
 package com.example.binance_a.core.network
 
+import com.example.binance_a.core.logging.Logger
 import com.example.binance_a.core.security.SecureStorage
 import io.mockk.every
 import io.mockk.mockk
@@ -19,6 +20,7 @@ class AuthInterceptorTest {
     private lateinit var mockWebServer: MockWebServer
     private lateinit var secureStorage: SecureStorage
     private lateinit var timeSyncManager: TimeSyncManager
+    private lateinit var logger: Logger
     private lateinit var authInterceptor: AuthInterceptor
     private lateinit var okHttpClient: OkHttpClient
 
@@ -29,8 +31,9 @@ class AuthInterceptorTest {
 
         secureStorage = mockk(relaxed = true)
         timeSyncManager = mockk(relaxed = true)
+        logger = mockk(relaxed = true)
 
-        authInterceptor = AuthInterceptor(secureStorage, timeSyncManager)
+        authInterceptor = AuthInterceptor(secureStorage, timeSyncManager, logger)
 
         okHttpClient = OkHttpClient.Builder()
             .addInterceptor(authInterceptor)

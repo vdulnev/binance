@@ -1,11 +1,14 @@
 package com.example.binance_a.core.network
 
+import com.example.binance_a.core.logging.Logger
 import kotlin.time.Duration.Companion.minutes
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TimeSyncManager @Inject constructor() {
+class TimeSyncManager @Inject constructor(
+    private val logger: Logger
+) {
     @Volatile
     var offset: Long = 0L
         private set
@@ -19,8 +22,10 @@ class TimeSyncManager @Inject constructor() {
     }
 
     fun updateOffset(serverTime: Long) {
-        offset = serverTime - System.currentTimeMillis()
-        lastSyncTime = System.currentTimeMillis()
+        val currentLocalTime = System.currentTimeMillis()
+        offset = serverTime - currentLocalTime
+        lastSyncTime = currentLocalTime
+        logger.i("Time sync updated. Offset: ${offset}ms, Last sync: $lastSyncTime")
     }
 
     fun getServerTimestamp(): Long = System.currentTimeMillis() + offset

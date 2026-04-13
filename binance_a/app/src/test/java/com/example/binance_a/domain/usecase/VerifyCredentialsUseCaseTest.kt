@@ -1,6 +1,7 @@
 package com.example.binance_a.domain.usecase
 
 import com.example.binance_a.core.common.Result
+import com.example.binance_a.core.logging.Logger
 import com.example.binance_a.core.network.BinanceApiService
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -14,12 +15,14 @@ import org.junit.Test
 class VerifyCredentialsUseCaseTest {
 
     private lateinit var apiService: BinanceApiService
+    private lateinit var logger: Logger
     private lateinit var useCase: VerifyCredentialsUseCase
 
     @Before
     fun setup() {
         apiService = mockk()
-        useCase = VerifyCredentialsUseCase(apiService)
+        logger = mockk(relaxed = true)
+        useCase = VerifyCredentialsUseCase(apiService, logger)
     }
 
     @Test

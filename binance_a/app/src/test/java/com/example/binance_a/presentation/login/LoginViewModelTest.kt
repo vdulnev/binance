@@ -1,6 +1,7 @@
 package com.example.binance_a.presentation.login
 
 import com.example.binance_a.core.common.Result
+import com.example.binance_a.core.logging.Logger
 import com.example.binance_a.core.network.TimeSyncManager
 import com.example.binance_a.core.security.SecureStorage
 import com.example.binance_a.domain.usecase.VerifyCredentialsUseCase
@@ -25,6 +26,7 @@ class LoginViewModelTest {
     private lateinit var secureStorage: SecureStorage
     private lateinit var verifyCredentialsUseCase: VerifyCredentialsUseCase
     private lateinit var timeSyncManager: TimeSyncManager
+    private lateinit var logger: Logger
     private lateinit var viewModel: LoginViewModel
 
     private val testDispatcher = StandardTestDispatcher()
@@ -35,8 +37,9 @@ class LoginViewModelTest {
         secureStorage = mockk(relaxed = true)
         verifyCredentialsUseCase = mockk()
         timeSyncManager = mockk(relaxed = true)
+        logger = mockk(relaxed = true)
 
-        viewModel = LoginViewModel(secureStorage, verifyCredentialsUseCase, timeSyncManager)
+        viewModel = LoginViewModel(secureStorage, verifyCredentialsUseCase, timeSyncManager, logger)
     }
 
     @After

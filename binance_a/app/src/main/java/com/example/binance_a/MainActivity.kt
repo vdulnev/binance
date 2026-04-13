@@ -9,7 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
-import timber.log.Timber
+import com.example.binance_a.core.logging.Logger
 import com.example.binance_a.core.security.SecureStorage
 import com.example.binance_a.presentation.ui.theme.BinanceATheme
 import javax.inject.Inject
@@ -20,12 +20,15 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var secureStorage: SecureStorage
 
+    @Inject
+    lateinit var logger: Logger
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Timber.d("MainActivity onCreate")
+        logger.d("MainActivity onCreate")
 
         val initialLoggedInState = secureStorage.isLoggedIn()
-        Timber.i("Initial isLoggedIn state: $initialLoggedInState")
+        logger.i("Initial isLoggedIn state: $initialLoggedInState")
 
         enableEdgeToEdge()
         setContent {
@@ -36,8 +39,9 @@ class MainActivity : ComponentActivity() {
                 ) {
                     com.example.binance_a.presentation.navigation.AppNavHost(
                         isLoggedIn = initialLoggedInState, 
+                        logger = logger,
                         onLogout = {
-                            Timber.i("Logout requested from AppNavHost")
+                            logger.i("Logout requested from AppNavHost")
                             secureStorage.clear()
                             // Note: Realistically, you'd trigger navigation or activity restart
                         }
@@ -49,26 +53,26 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        Timber.d("MainActivity onStart")
+        logger.d("MainActivity onStart")
     }
 
     override fun onResume() {
         super.onResume()
-        Timber.d("MainActivity onResume")
+        logger.d("MainActivity onResume")
     }
 
     override fun onPause() {
         super.onPause()
-        Timber.d("MainActivity onPause")
+        logger.d("MainActivity onPause")
     }
 
     override fun onStop() {
         super.onStop()
-        Timber.d("MainActivity onStop")
+        logger.d("MainActivity onStop")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Timber.d("MainActivity onDestroy")
+        logger.d("MainActivity onDestroy")
     }
 }

@@ -9,7 +9,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.NavEntry
 import kotlinx.serialization.Serializable
-import timber.log.Timber
+import com.example.binance_a.core.logging.Logger
 import com.example.binance_a.presentation.login.LoginScreen
 import com.example.binance_a.presentation.login.LoginViewModel
 import com.example.binance_a.presentation.ui.alerts.PriceAlertsScreen
@@ -24,6 +24,7 @@ import com.example.binance_a.presentation.ui.trade.TradeScreen
 @Composable
 fun AppNavHost(
     isLoggedIn: Boolean,
+    logger: Logger,
     modifier: Modifier = Modifier,
     onLogout: () -> Unit = {}
 ) {
@@ -31,7 +32,7 @@ fun AppNavHost(
     val backStack = rememberNavBackStack(initialEntry)
 
     LaunchedEffect(backStack.lastOrNull()) {
-        Timber.d("Navigated to: ${backStack.lastOrNull()?.javaClass?.simpleName}")
+        logger.d("Navigated to: ${backStack.lastOrNull()?.javaClass?.simpleName}")
     }
 
     NavDisplay(
@@ -45,14 +46,14 @@ fun AppNavHost(
                     LoginScreen(
                         viewModel = loginViewModel,
                         onLoginSuccess = {
-                            Timber.i("Login flow complete. Navigating to Home.")
+                            logger.i("Login flow complete. Navigating to Home.")
                             backStack.add(AppRoute.Home)
                         }
                     )
                 }
                 AppRoute.Home -> HomeScreen(
                     onLogout = {
-                        Timber.i("Logout triggered. Navigating to Login.")
+                        logger.i("Logout triggered. Navigating to Login.")
                         onLogout()
                     }
                 )
@@ -64,7 +65,7 @@ fun AppNavHost(
                 AppRoute.PriceAlerts -> PriceAlertsScreen()
                 AppRoute.Settings -> SettingsScreen()
                 else -> {
-                    Timber.w("Unknown route encountered: $key")
+                    logger.w("Unknown route encountered: $key")
                 }
             }
         }
