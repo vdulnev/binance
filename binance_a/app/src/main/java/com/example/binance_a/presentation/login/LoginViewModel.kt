@@ -6,9 +6,11 @@ import com.example.binance_a.core.common.Result
 import com.example.binance_a.core.logging.Logger
 import com.example.binance_a.core.security.SecureStorage
 import com.example.binance_a.domain.usecase.VerifyCredentialsUseCase
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -22,6 +24,9 @@ class LoginViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+
+    private val _loginSuccess = Channel<Unit>(Channel.BUFFERED)
+    val loginSuccess = _loginSuccess.receiveAsFlow()
 
     init {
         logger.d("LoginViewModel initialized")
@@ -63,12 +68,8 @@ class LoginViewModel @Inject constructor(
                 when (val result = verifyCredentialsUseCase(state.apiKey, state.apiSecret, environment)) {
                     is Result.Success -> {
                         logger.i("Login successful")
-                        // TODO: Perform time sync
-                        // timeSyncManager.syncTime()
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            isLoggedIn = true
-                        )
+                        _uiState.value = _uiState.value.copy(isLoading = false)
+                        _loginSuccess.send(Unit)
                     }
                     is Result.Error -> {
                         logger.e(result.exception, "Login verification failed")
@@ -98,6 +99,5 @@ data class LoginUiState(
     val apiSecret: String = "",
     val isTestnet: Boolean = false,
     val isLoading: Boolean = false,
-    val isLoggedIn: Boolean = false,
     val error: String? = null
 )

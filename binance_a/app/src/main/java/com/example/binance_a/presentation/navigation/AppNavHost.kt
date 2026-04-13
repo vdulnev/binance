@@ -8,6 +8,8 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import kotlinx.serialization.Serializable
 import com.example.binance_a.core.logging.Logger
 import com.example.binance_a.presentation.login.LoginScreen
@@ -26,7 +28,8 @@ fun AppNavHost(
     isLoggedIn: Boolean,
     logger: Logger,
     modifier: Modifier = Modifier,
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    onLoginSuccess: () -> Unit = {}
 ) {
     val initialEntry = if (isLoggedIn) AppRoute.Home else AppRoute.Login
     val backStack = rememberNavBackStack(initialEntry)
@@ -37,7 +40,11 @@ fun AppNavHost(
 
     NavDisplay(
         backStack = backStack,
-        modifier = modifier
+        modifier = modifier,
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator()
+        )
     ) { key ->
         NavEntry(key) {
             when (key) {
@@ -46,7 +53,9 @@ fun AppNavHost(
                     LoginScreen(
                         viewModel = loginViewModel,
                         onLoginSuccess = {
-                            logger.i("Login flow complete. Navigating to Home.")
+                            logger.i("Login flow complete. Notifying MainActivity and navigating to Home.")
+                            onLoginSuccess()
+                            backStack.clear()
                             backStack.add(AppRoute.Home)
                         }
                     )
@@ -55,6 +64,9 @@ fun AppNavHost(
                     onLogout = {
                         logger.i("Logout triggered. Navigating to Login.")
                         onLogout()
+                        // Manual backstack clear is also good as a first step before recreation
+                        backStack.clear()
+                        backStack.add(AppRoute.Login)
                     }
                 )
                 AppRoute.Portfolio -> PortfolioScreen()

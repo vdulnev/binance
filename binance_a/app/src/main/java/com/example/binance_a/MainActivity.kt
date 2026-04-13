@@ -7,11 +7,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import dagger.hilt.android.AndroidEntryPoint
 import com.example.binance_a.core.logging.Logger
 import com.example.binance_a.core.security.SecureStorage
 import com.example.binance_a.presentation.ui.theme.BinanceATheme
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -27,23 +31,27 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         logger.d("MainActivity onCreate")
 
-        val initialLoggedInState = secureStorage.isLoggedIn()
-        logger.i("Initial isLoggedIn state: $initialLoggedInState")
-
         enableEdgeToEdge()
         setContent {
+            var isLoggedIn by remember { mutableStateOf(secureStorage.isLoggedIn()) }
+            logger.i("Current isLoggedIn state from storage: $isLoggedIn")
+
             BinanceATheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     com.example.binance_a.presentation.navigation.AppNavHost(
-                        isLoggedIn = initialLoggedInState, 
+                        isLoggedIn = isLoggedIn,
                         logger = logger,
                         onLogout = {
-                            logger.i("Logout requested from AppNavHost")
+                            logger.i("Logout requested. Clearing storage.")
                             secureStorage.clear()
-                            // Note: Realistically, you'd trigger navigation or activity restart
+                            isLoggedIn = false
+                        },
+                        onLoginSuccess = {
+                            logger.i("Login successful. Showing Home.")
+                            isLoggedIn = true
                         }
                     )
                 }

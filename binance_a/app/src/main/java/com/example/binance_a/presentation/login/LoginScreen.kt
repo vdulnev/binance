@@ -14,11 +14,8 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    if (uiState.isLoggedIn) {
-        LaunchedEffect(Unit) {
-            onLoginSuccess()
-        }
-        return
+    LaunchedEffect(Unit) {
+        viewModel.loginSuccess.collect { onLoginSuccess() }
     }
 
     Column(

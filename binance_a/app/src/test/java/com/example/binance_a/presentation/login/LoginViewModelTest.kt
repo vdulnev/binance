@@ -10,6 +10,8 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -39,7 +41,7 @@ class LoginViewModelTest {
         timeSyncManager = mockk(relaxed = true)
         logger = mockk(relaxed = true)
 
-        viewModel = LoginViewModel(secureStorage, verifyCredentialsUseCase, timeSyncManager, logger)
+        viewModel = LoginViewModel(secureStorage, verifyCredentialsUseCase, logger)
     }
 
     @After
@@ -57,19 +59,20 @@ class LoginViewModelTest {
     }
 
     @Test
-    fun `login success updates state and saves credentials`() = runTest {
+    fun `login success emits event and saves credentials`() = runTest {
         viewModel.onApiKeyChange("valid_key")
         viewModel.onApiSecretChange("valid_secret")
         viewModel.onEnvironmentChange(true) // Testnet
 
-        coEvery { 
-            verifyCredentialsUseCase("valid_key", "valid_secret", "TESTNET") 
+        coEvery {
+            verifyCredentialsUseCase("valid_key", "valid_secret", "TESTNET")
         } returns Result.Success(Unit)
 
+        val successEvent = async { viewModel.loginSuccess.first() }
         viewModel.login()
         advanceUntilIdle()
 
-        assertEquals(true, viewModel.uiState.value.isLoggedIn)
+        successEvent.await() // confirms event was emitted
         assertEquals(false, viewModel.uiState.value.isLoading)
         assertEquals(null, viewModel.uiState.value.error)
 
@@ -88,7 +91,6 @@ class LoginViewModelTest {
         viewModel.login()
         advanceUntilIdle()
 
-        assertEquals(false, viewModel.uiState.value.isLoggedIn)
         assertEquals("Invalid signature", viewModel.uiState.value.error)
 
         coVerify { secureStorage.clear() }
@@ -106,7 +108,6 @@ class LoginViewModelTest {
         viewModel.login()
         advanceUntilIdle()
 
-        assertEquals(false, viewModel.uiState.value.isLoggedIn)
         assertEquals("Network crash", viewModel.uiState.value.error)
         
         coVerify { secureStorage.clear() }
