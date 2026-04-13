@@ -30,7 +30,8 @@ class RedactingDioLogger extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final method = options.method;
     final uri = _redactUri(options.uri);
-    _talker.debug('HTTP → $method $uri');
+    final headers = redactHeaders(options.headers);
+    _talker.debug('HTTP → $method $uri\nHeaders: $headers');
     handler.next(options);
   }
 
@@ -41,7 +42,8 @@ class RedactingDioLogger extends Interceptor {
   ) {
     final method = response.requestOptions.method;
     final uri = _redactUri(response.requestOptions.uri);
-    _talker.debug('HTTP ← ${response.statusCode} $method $uri');
+    final headers = redactHeaders(response.headers.map);
+    _talker.debug('HTTP ← ${response.statusCode} $method $uri\nHeaders: $headers');
     handler.next(response);
   }
 
@@ -49,8 +51,9 @@ class RedactingDioLogger extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final method = err.requestOptions.method;
     final uri = _redactUri(err.requestOptions.uri);
+    final headers = redactHeaders(err.requestOptions.headers);
     _talker.error(
-      'HTTP ✗ ${err.response?.statusCode ?? '-'} $method $uri',
+      'HTTP ✗ ${err.response?.statusCode ?? '-'} $method $uri\nHeaders: $headers',
       err.error,
     );
     handler.next(err);
