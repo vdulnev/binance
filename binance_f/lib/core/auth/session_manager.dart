@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:talker/talker.dart';
 
+import '../../features/alerts/data/alert_evaluator.dart';
+import '../../features/alerts/data/alerts_repository.dart';
 import '../../features/favorites/data/favorites_repository.dart';
 import '../../features/markets/data/market_ws_manager.dart';
 import '../db/order_history_cache.dart';
@@ -35,6 +37,8 @@ class SessionManager {
     OrderHistoryCache? orderHistoryCache,
     MarketWsManager? marketWsManager,
     FavoritesRepository? favoritesRepository,
+    AlertsRepository? alertsRepository,
+    AlertEvaluator? alertEvaluator,
   }) : _credentials = credentialsManager,
        _envManager = envManager,
        _talker = talker,
@@ -42,7 +46,9 @@ class SessionManager {
        _portfolioCache = portfolioCache,
        _orderHistoryCache = orderHistoryCache,
        _marketWsManager = marketWsManager,
-       _favoritesRepository = favoritesRepository;
+       _favoritesRepository = favoritesRepository,
+       _alertsRepository = alertsRepository,
+       _alertEvaluator = alertEvaluator;
 
   final CredentialsManager _credentials;
   final EnvManager _envManager;
@@ -52,6 +58,8 @@ class SessionManager {
   final OrderHistoryCache? _orderHistoryCache;
   final MarketWsManager? _marketWsManager;
   final FavoritesRepository? _favoritesRepository;
+  final AlertsRepository? _alertsRepository;
+  final AlertEvaluator? _alertEvaluator;
 
   final Set<CancelToken> _cancelTokens = <CancelToken>{};
 
@@ -138,6 +146,25 @@ class SessionManager {
           favResult.match(
             (err) => _talker.error('logout: favorites clear failed', err),
             (_) => _talker.info('logout: favorites cleared'),
+          );
+        }
+
+        // 2d. Stop alert evaluator (Phase 9). Must happen before
+        //     clearing alert data so the evaluator doesn't read stale
+        //     rows mid-wipe.
+        final evaluator = _alertEvaluator;
+        if (evaluator != null) {
+          evaluator.stop();
+          _talker.info('logout: alert evaluator stopped');
+        }
+
+        // 2e. Wipe price alerts table (Phase 9).
+        final alertRepo = _alertsRepository;
+        if (alertRepo is DriftAlertsRepository) {
+          final alertResult = await alertRepo.clearAll().run();
+          alertResult.match(
+            (err) => _talker.error('logout: alerts clear failed', err),
+            (_) => _talker.info('logout: alerts cleared'),
           );
         }
 

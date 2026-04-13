@@ -65,13 +65,35 @@ class CachedOrders extends Table {
   Set<Column<Object>> get primaryKey => {orderId, market};
 }
 
+/// Local price alerts (Phase 9 — FR-7.1).
+///
+/// Each row is one user-created alert. The evaluator watches enabled rows
+/// via Drift's `.watch()` and compares against the live ticker stream.
+@DataClassName('PriceAlertRow')
+class PriceAlerts extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get symbol => text()();
+  TextColumn get market => text()(); // 'spot' | 'futures'
+  TextColumn get direction => text()(); // 'above' | 'below'
+  TextColumn get targetPrice => text()(); // Decimal stored as string
+  BoolColumn get enabled => boolean().withDefault(const Constant(true))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get triggeredAt => dateTime().nullable()();
+}
+
 /// The app's Drift database. Owned as a lazy singleton in get_it — see
 /// `lib/core/di/service_locator.dart`.
 ///
 /// Migrations are versioned — never edit a past migration, always add a
 /// new one.
 @DriftDatabase(
-  tables: [CachedPortfolio, Favorites, CachedSymbols, CachedOrders],
+  tables: [
+    CachedPortfolio,
+    Favorites,
+    CachedSymbols,
+    CachedOrders,
+    PriceAlerts,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -81,7 +103,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -95,6 +117,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 3) {
         await m.createTable(cachedOrders);
+      }
+      if (from < 4) {
+        await m.createTable(priceAlerts);
       }
     },
   );

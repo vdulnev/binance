@@ -11,6 +11,22 @@
 part of 'app_router.dart';
 
 /// generated route for
+/// [AlertsScreen]
+class AlertsRoute extends PageRouteInfo<void> {
+  const AlertsRoute({List<PageRouteInfo>? children})
+    : super(AlertsRoute.name, initialChildren: children);
+
+  static const String name = 'AlertsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AlertsScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [FuturesOrderTicketScreen]
 class FuturesOrderTicketRoute
     extends PageRouteInfo<FuturesOrderTicketRouteArgs> {

@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
+import '../../features/alerts/widgets/alerts_screen.dart';
 import '../../features/auth/widgets/home_screen.dart';
 import '../../features/auth/widgets/login_screen.dart';
 import '../../features/history/widgets/order_history_screen.dart';
@@ -40,6 +41,7 @@ class AppRouter extends RootStackRouter {
       path: '/history',
       guards: [_authGuard],
     ),
+    AutoRoute(page: AlertsRoute.page, path: '/alerts', guards: [_authGuard]),
     AutoRoute(page: LoginRoute.page, path: '/login'),
   ];
 }

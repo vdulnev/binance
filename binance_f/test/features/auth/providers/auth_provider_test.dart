@@ -4,6 +4,7 @@ import 'package:binance_f/core/di/service_locator.dart';
 import 'package:binance_f/core/env/env.dart';
 import 'package:binance_f/core/env/env_manager.dart';
 import 'package:binance_f/core/models/app_exception.dart';
+import 'package:binance_f/features/alerts/data/alert_evaluator.dart';
 import 'package:binance_f/features/auth/data/auth_repository.dart';
 import 'package:binance_f/features/auth/providers/auth_provider.dart';
 import 'package:binance_f/features/auth/providers/auth_state.dart';
@@ -19,6 +20,8 @@ class MockAuthRepository extends Mock implements AuthRepository {}
 class MockCredentialsManager extends Mock implements CredentialsManager {}
 
 class MockSessionManager extends Mock implements SessionManager {}
+
+class MockAlertEvaluator extends Mock implements AlertEvaluator {}
 
 /// Spy [EnvManager] that records every `set` call. We don't want to build
 /// real Dios in a unit test, so the factory hands back a no-op stub.
@@ -38,6 +41,7 @@ void main() {
   late MockAuthRepository mockRepo;
   late MockCredentialsManager mockCredentials;
   late MockSessionManager mockSessionManager;
+  late MockAlertEvaluator mockAlertEvaluator;
   late _SpyEnvManager spyEnv;
   late ProviderContainer container;
 
@@ -49,6 +53,7 @@ void main() {
     mockRepo = MockAuthRepository();
     mockCredentials = MockCredentialsManager();
     mockSessionManager = MockSessionManager();
+    mockAlertEvaluator = MockAlertEvaluator();
     spyEnv = _SpyEnvManager(talker: Talker());
 
     if (sl.isRegistered<AuthRepository>()) sl.unregister<AuthRepository>();
@@ -58,12 +63,14 @@ void main() {
     if (sl.isRegistered<SessionManager>()) sl.unregister<SessionManager>();
     if (sl.isRegistered<EnvManager>()) sl.unregister<EnvManager>();
     if (sl.isRegistered<Talker>()) sl.unregister<Talker>();
+    if (sl.isRegistered<AlertEvaluator>()) sl.unregister<AlertEvaluator>();
 
     sl.registerSingleton<AuthRepository>(mockRepo);
     sl.registerSingleton<CredentialsManager>(mockCredentials);
     sl.registerSingleton<SessionManager>(mockSessionManager);
     sl.registerSingleton<EnvManager>(spyEnv);
     sl.registerSingleton<Talker>(Talker());
+    sl.registerSingleton<AlertEvaluator>(mockAlertEvaluator);
 
     when(
       () => mockSessionManager.isSessionValid(),
@@ -89,7 +96,8 @@ void main() {
       ..unregister<CredentialsManager>()
       ..unregister<SessionManager>()
       ..unregister<EnvManager>()
-      ..unregister<Talker>();
+      ..unregister<Talker>()
+      ..unregister<AlertEvaluator>();
   });
 
   group('AuthNotifier', () {

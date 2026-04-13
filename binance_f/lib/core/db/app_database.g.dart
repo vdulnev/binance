@@ -1405,6 +1405,514 @@ class CachedOrdersCompanion extends UpdateCompanion<CachedOrder> {
   }
 }
 
+class $PriceAlertsTable extends PriceAlerts
+    with TableInfo<$PriceAlertsTable, PriceAlertRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PriceAlertsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _symbolMeta = const VerificationMeta('symbol');
+  @override
+  late final GeneratedColumn<String> symbol = GeneratedColumn<String>(
+    'symbol',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _marketMeta = const VerificationMeta('market');
+  @override
+  late final GeneratedColumn<String> market = GeneratedColumn<String>(
+    'market',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _directionMeta = const VerificationMeta(
+    'direction',
+  );
+  @override
+  late final GeneratedColumn<String> direction = GeneratedColumn<String>(
+    'direction',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetPriceMeta = const VerificationMeta(
+    'targetPrice',
+  );
+  @override
+  late final GeneratedColumn<String> targetPrice = GeneratedColumn<String>(
+    'target_price',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _enabledMeta = const VerificationMeta(
+    'enabled',
+  );
+  @override
+  late final GeneratedColumn<bool> enabled = GeneratedColumn<bool>(
+    'enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _triggeredAtMeta = const VerificationMeta(
+    'triggeredAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> triggeredAt = GeneratedColumn<DateTime>(
+    'triggered_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    symbol,
+    market,
+    direction,
+    targetPrice,
+    enabled,
+    createdAt,
+    triggeredAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'price_alerts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PriceAlertRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('symbol')) {
+      context.handle(
+        _symbolMeta,
+        symbol.isAcceptableOrUnknown(data['symbol']!, _symbolMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_symbolMeta);
+    }
+    if (data.containsKey('market')) {
+      context.handle(
+        _marketMeta,
+        market.isAcceptableOrUnknown(data['market']!, _marketMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_marketMeta);
+    }
+    if (data.containsKey('direction')) {
+      context.handle(
+        _directionMeta,
+        direction.isAcceptableOrUnknown(data['direction']!, _directionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_directionMeta);
+    }
+    if (data.containsKey('target_price')) {
+      context.handle(
+        _targetPriceMeta,
+        targetPrice.isAcceptableOrUnknown(
+          data['target_price']!,
+          _targetPriceMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetPriceMeta);
+    }
+    if (data.containsKey('enabled')) {
+      context.handle(
+        _enabledMeta,
+        enabled.isAcceptableOrUnknown(data['enabled']!, _enabledMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('triggered_at')) {
+      context.handle(
+        _triggeredAtMeta,
+        triggeredAt.isAcceptableOrUnknown(
+          data['triggered_at']!,
+          _triggeredAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PriceAlertRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PriceAlertRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      symbol: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}symbol'],
+      )!,
+      market: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}market'],
+      )!,
+      direction: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}direction'],
+      )!,
+      targetPrice: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_price'],
+      )!,
+      enabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enabled'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      triggeredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}triggered_at'],
+      ),
+    );
+  }
+
+  @override
+  $PriceAlertsTable createAlias(String alias) {
+    return $PriceAlertsTable(attachedDatabase, alias);
+  }
+}
+
+class PriceAlertRow extends DataClass implements Insertable<PriceAlertRow> {
+  final int id;
+  final String symbol;
+  final String market;
+  final String direction;
+  final String targetPrice;
+  final bool enabled;
+  final DateTime createdAt;
+  final DateTime? triggeredAt;
+  const PriceAlertRow({
+    required this.id,
+    required this.symbol,
+    required this.market,
+    required this.direction,
+    required this.targetPrice,
+    required this.enabled,
+    required this.createdAt,
+    this.triggeredAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['symbol'] = Variable<String>(symbol);
+    map['market'] = Variable<String>(market);
+    map['direction'] = Variable<String>(direction);
+    map['target_price'] = Variable<String>(targetPrice);
+    map['enabled'] = Variable<bool>(enabled);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || triggeredAt != null) {
+      map['triggered_at'] = Variable<DateTime>(triggeredAt);
+    }
+    return map;
+  }
+
+  PriceAlertsCompanion toCompanion(bool nullToAbsent) {
+    return PriceAlertsCompanion(
+      id: Value(id),
+      symbol: Value(symbol),
+      market: Value(market),
+      direction: Value(direction),
+      targetPrice: Value(targetPrice),
+      enabled: Value(enabled),
+      createdAt: Value(createdAt),
+      triggeredAt: triggeredAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(triggeredAt),
+    );
+  }
+
+  factory PriceAlertRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PriceAlertRow(
+      id: serializer.fromJson<int>(json['id']),
+      symbol: serializer.fromJson<String>(json['symbol']),
+      market: serializer.fromJson<String>(json['market']),
+      direction: serializer.fromJson<String>(json['direction']),
+      targetPrice: serializer.fromJson<String>(json['targetPrice']),
+      enabled: serializer.fromJson<bool>(json['enabled']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      triggeredAt: serializer.fromJson<DateTime?>(json['triggeredAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'symbol': serializer.toJson<String>(symbol),
+      'market': serializer.toJson<String>(market),
+      'direction': serializer.toJson<String>(direction),
+      'targetPrice': serializer.toJson<String>(targetPrice),
+      'enabled': serializer.toJson<bool>(enabled),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'triggeredAt': serializer.toJson<DateTime?>(triggeredAt),
+    };
+  }
+
+  PriceAlertRow copyWith({
+    int? id,
+    String? symbol,
+    String? market,
+    String? direction,
+    String? targetPrice,
+    bool? enabled,
+    DateTime? createdAt,
+    Value<DateTime?> triggeredAt = const Value.absent(),
+  }) => PriceAlertRow(
+    id: id ?? this.id,
+    symbol: symbol ?? this.symbol,
+    market: market ?? this.market,
+    direction: direction ?? this.direction,
+    targetPrice: targetPrice ?? this.targetPrice,
+    enabled: enabled ?? this.enabled,
+    createdAt: createdAt ?? this.createdAt,
+    triggeredAt: triggeredAt.present ? triggeredAt.value : this.triggeredAt,
+  );
+  PriceAlertRow copyWithCompanion(PriceAlertsCompanion data) {
+    return PriceAlertRow(
+      id: data.id.present ? data.id.value : this.id,
+      symbol: data.symbol.present ? data.symbol.value : this.symbol,
+      market: data.market.present ? data.market.value : this.market,
+      direction: data.direction.present ? data.direction.value : this.direction,
+      targetPrice: data.targetPrice.present
+          ? data.targetPrice.value
+          : this.targetPrice,
+      enabled: data.enabled.present ? data.enabled.value : this.enabled,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      triggeredAt: data.triggeredAt.present
+          ? data.triggeredAt.value
+          : this.triggeredAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PriceAlertRow(')
+          ..write('id: $id, ')
+          ..write('symbol: $symbol, ')
+          ..write('market: $market, ')
+          ..write('direction: $direction, ')
+          ..write('targetPrice: $targetPrice, ')
+          ..write('enabled: $enabled, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('triggeredAt: $triggeredAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    symbol,
+    market,
+    direction,
+    targetPrice,
+    enabled,
+    createdAt,
+    triggeredAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PriceAlertRow &&
+          other.id == this.id &&
+          other.symbol == this.symbol &&
+          other.market == this.market &&
+          other.direction == this.direction &&
+          other.targetPrice == this.targetPrice &&
+          other.enabled == this.enabled &&
+          other.createdAt == this.createdAt &&
+          other.triggeredAt == this.triggeredAt);
+}
+
+class PriceAlertsCompanion extends UpdateCompanion<PriceAlertRow> {
+  final Value<int> id;
+  final Value<String> symbol;
+  final Value<String> market;
+  final Value<String> direction;
+  final Value<String> targetPrice;
+  final Value<bool> enabled;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> triggeredAt;
+  const PriceAlertsCompanion({
+    this.id = const Value.absent(),
+    this.symbol = const Value.absent(),
+    this.market = const Value.absent(),
+    this.direction = const Value.absent(),
+    this.targetPrice = const Value.absent(),
+    this.enabled = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.triggeredAt = const Value.absent(),
+  });
+  PriceAlertsCompanion.insert({
+    this.id = const Value.absent(),
+    required String symbol,
+    required String market,
+    required String direction,
+    required String targetPrice,
+    this.enabled = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.triggeredAt = const Value.absent(),
+  }) : symbol = Value(symbol),
+       market = Value(market),
+       direction = Value(direction),
+       targetPrice = Value(targetPrice);
+  static Insertable<PriceAlertRow> custom({
+    Expression<int>? id,
+    Expression<String>? symbol,
+    Expression<String>? market,
+    Expression<String>? direction,
+    Expression<String>? targetPrice,
+    Expression<bool>? enabled,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? triggeredAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (symbol != null) 'symbol': symbol,
+      if (market != null) 'market': market,
+      if (direction != null) 'direction': direction,
+      if (targetPrice != null) 'target_price': targetPrice,
+      if (enabled != null) 'enabled': enabled,
+      if (createdAt != null) 'created_at': createdAt,
+      if (triggeredAt != null) 'triggered_at': triggeredAt,
+    });
+  }
+
+  PriceAlertsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? symbol,
+    Value<String>? market,
+    Value<String>? direction,
+    Value<String>? targetPrice,
+    Value<bool>? enabled,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? triggeredAt,
+  }) {
+    return PriceAlertsCompanion(
+      id: id ?? this.id,
+      symbol: symbol ?? this.symbol,
+      market: market ?? this.market,
+      direction: direction ?? this.direction,
+      targetPrice: targetPrice ?? this.targetPrice,
+      enabled: enabled ?? this.enabled,
+      createdAt: createdAt ?? this.createdAt,
+      triggeredAt: triggeredAt ?? this.triggeredAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (symbol.present) {
+      map['symbol'] = Variable<String>(symbol.value);
+    }
+    if (market.present) {
+      map['market'] = Variable<String>(market.value);
+    }
+    if (direction.present) {
+      map['direction'] = Variable<String>(direction.value);
+    }
+    if (targetPrice.present) {
+      map['target_price'] = Variable<String>(targetPrice.value);
+    }
+    if (enabled.present) {
+      map['enabled'] = Variable<bool>(enabled.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (triggeredAt.present) {
+      map['triggered_at'] = Variable<DateTime>(triggeredAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PriceAlertsCompanion(')
+          ..write('id: $id, ')
+          ..write('symbol: $symbol, ')
+          ..write('market: $market, ')
+          ..write('direction: $direction, ')
+          ..write('targetPrice: $targetPrice, ')
+          ..write('enabled: $enabled, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('triggeredAt: $triggeredAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1414,6 +1922,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $FavoritesTable favorites = $FavoritesTable(this);
   late final $CachedSymbolsTable cachedSymbols = $CachedSymbolsTable(this);
   late final $CachedOrdersTable cachedOrders = $CachedOrdersTable(this);
+  late final $PriceAlertsTable priceAlerts = $PriceAlertsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1423,6 +1932,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     favorites,
     cachedSymbols,
     cachedOrders,
+    priceAlerts,
   ];
 }
 
@@ -2211,6 +2721,261 @@ typedef $$CachedOrdersTableProcessedTableManager =
       CachedOrder,
       PrefetchHooks Function()
     >;
+typedef $$PriceAlertsTableCreateCompanionBuilder =
+    PriceAlertsCompanion Function({
+      Value<int> id,
+      required String symbol,
+      required String market,
+      required String direction,
+      required String targetPrice,
+      Value<bool> enabled,
+      Value<DateTime> createdAt,
+      Value<DateTime?> triggeredAt,
+    });
+typedef $$PriceAlertsTableUpdateCompanionBuilder =
+    PriceAlertsCompanion Function({
+      Value<int> id,
+      Value<String> symbol,
+      Value<String> market,
+      Value<String> direction,
+      Value<String> targetPrice,
+      Value<bool> enabled,
+      Value<DateTime> createdAt,
+      Value<DateTime?> triggeredAt,
+    });
+
+class $$PriceAlertsTableFilterComposer
+    extends Composer<_$AppDatabase, $PriceAlertsTable> {
+  $$PriceAlertsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get symbol => $composableBuilder(
+    column: $table.symbol,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get market => $composableBuilder(
+    column: $table.market,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get direction => $composableBuilder(
+    column: $table.direction,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetPrice => $composableBuilder(
+    column: $table.targetPrice,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get triggeredAt => $composableBuilder(
+    column: $table.triggeredAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PriceAlertsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PriceAlertsTable> {
+  $$PriceAlertsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get symbol => $composableBuilder(
+    column: $table.symbol,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get market => $composableBuilder(
+    column: $table.market,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get direction => $composableBuilder(
+    column: $table.direction,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetPrice => $composableBuilder(
+    column: $table.targetPrice,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get triggeredAt => $composableBuilder(
+    column: $table.triggeredAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PriceAlertsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PriceAlertsTable> {
+  $$PriceAlertsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get symbol =>
+      $composableBuilder(column: $table.symbol, builder: (column) => column);
+
+  GeneratedColumn<String> get market =>
+      $composableBuilder(column: $table.market, builder: (column) => column);
+
+  GeneratedColumn<String> get direction =>
+      $composableBuilder(column: $table.direction, builder: (column) => column);
+
+  GeneratedColumn<String> get targetPrice => $composableBuilder(
+    column: $table.targetPrice,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enabled =>
+      $composableBuilder(column: $table.enabled, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get triggeredAt => $composableBuilder(
+    column: $table.triggeredAt,
+    builder: (column) => column,
+  );
+}
+
+class $$PriceAlertsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PriceAlertsTable,
+          PriceAlertRow,
+          $$PriceAlertsTableFilterComposer,
+          $$PriceAlertsTableOrderingComposer,
+          $$PriceAlertsTableAnnotationComposer,
+          $$PriceAlertsTableCreateCompanionBuilder,
+          $$PriceAlertsTableUpdateCompanionBuilder,
+          (
+            PriceAlertRow,
+            BaseReferences<_$AppDatabase, $PriceAlertsTable, PriceAlertRow>,
+          ),
+          PriceAlertRow,
+          PrefetchHooks Function()
+        > {
+  $$PriceAlertsTableTableManager(_$AppDatabase db, $PriceAlertsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PriceAlertsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PriceAlertsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PriceAlertsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> symbol = const Value.absent(),
+                Value<String> market = const Value.absent(),
+                Value<String> direction = const Value.absent(),
+                Value<String> targetPrice = const Value.absent(),
+                Value<bool> enabled = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> triggeredAt = const Value.absent(),
+              }) => PriceAlertsCompanion(
+                id: id,
+                symbol: symbol,
+                market: market,
+                direction: direction,
+                targetPrice: targetPrice,
+                enabled: enabled,
+                createdAt: createdAt,
+                triggeredAt: triggeredAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String symbol,
+                required String market,
+                required String direction,
+                required String targetPrice,
+                Value<bool> enabled = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> triggeredAt = const Value.absent(),
+              }) => PriceAlertsCompanion.insert(
+                id: id,
+                symbol: symbol,
+                market: market,
+                direction: direction,
+                targetPrice: targetPrice,
+                enabled: enabled,
+                createdAt: createdAt,
+                triggeredAt: triggeredAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PriceAlertsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PriceAlertsTable,
+      PriceAlertRow,
+      $$PriceAlertsTableFilterComposer,
+      $$PriceAlertsTableOrderingComposer,
+      $$PriceAlertsTableAnnotationComposer,
+      $$PriceAlertsTableCreateCompanionBuilder,
+      $$PriceAlertsTableUpdateCompanionBuilder,
+      (
+        PriceAlertRow,
+        BaseReferences<_$AppDatabase, $PriceAlertsTable, PriceAlertRow>,
+      ),
+      PriceAlertRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2223,4 +2988,6 @@ class $AppDatabaseManager {
       $$CachedSymbolsTableTableManager(_db, _db.cachedSymbols);
   $$CachedOrdersTableTableManager get cachedOrders =>
       $$CachedOrdersTableTableManager(_db, _db.cachedOrders);
+  $$PriceAlertsTableTableManager get priceAlerts =>
+      $$PriceAlertsTableTableManager(_db, _db.priceAlerts);
 }

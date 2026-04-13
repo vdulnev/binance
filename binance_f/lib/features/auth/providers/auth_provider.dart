@@ -7,6 +7,7 @@ import '../../../core/di/service_locator.dart';
 import '../../../core/env/env.dart';
 import '../../../core/env/env_manager.dart';
 import '../../../core/models/app_exception.dart';
+import '../../alerts/data/alert_evaluator.dart';
 import '../data/auth_repository.dart';
 import 'auth_state.dart';
 
@@ -74,6 +75,7 @@ class AuthNotifier extends Notifier<AuthState> {
       },
       (_) {
         _talker.info('Login succeeded — env=${env.name}');
+        sl<AlertEvaluator>().start();
         return const AuthState.authenticated();
       },
     );

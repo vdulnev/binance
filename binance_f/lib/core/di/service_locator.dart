@@ -2,6 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:talker/talker.dart';
 
+import '../../features/alerts/data/alert_evaluator.dart';
+import '../../features/alerts/data/alerts_repository.dart';
+import '../../features/alerts/data/notification_service.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/chart/data/chart_repository.dart';
 import '../../features/favorites/data/favorites_repository.dart';
@@ -91,10 +94,31 @@ Future<void> initServiceLocator() async {
     () => OrderHistoryCache(database: sl<AppDatabase>()),
   );
 
+  // Alerts repository (Phase 9 — local price alerts).
+  sl.registerLazySingleton<AlertsRepository>(
+    () => DriftAlertsRepository(database: sl<AppDatabase>()),
+  );
+
+  // Notification service (Phase 9).
+  sl.registerLazySingleton<NotificationService>(NotificationService.new);
+
   // Market WebSocket manager — per-symbol WS streams (ticker, depth,
   // trade, kline). Logout calls `unsubscribeAll()` via SessionManager.
   sl.registerLazySingleton<MarketWsManager>(
     () => MarketWsManager(envManager: sl<EnvManager>(), talker: sl<Talker>()),
+  );
+
+  // Alert evaluator (Phase 9). Subscribes to ticker stream from
+  // MarketWsManager and evaluates price alerts continuously.
+  sl.registerLazySingleton<AlertEvaluator>(
+    () => AlertEvaluator(
+      alertsRepository: sl<AlertsRepository>(),
+      marketWsManager: sl<MarketWsManager>(),
+      talker: sl<Talker>(),
+      onTriggered: (alert, price) {
+        sl<NotificationService>().showAlertNotification(alert, price);
+      },
+    ),
   );
 
   // User data WebSocket stream (spot + futures listen keys). Wired here
@@ -124,6 +148,8 @@ Future<void> initServiceLocator() async {
       orderHistoryCache: sl<OrderHistoryCache>(),
       marketWsManager: sl<MarketWsManager>(),
       favoritesRepository: sl<FavoritesRepository>(),
+      alertsRepository: sl<AlertsRepository>(),
+      alertEvaluator: sl<AlertEvaluator>(),
     ),
   );
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/router/app_router.dart';
+import '../../alerts/widgets/create_alert_dialog.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../../markets/data/models/ticker_24h.dart';
 import '../../markets/providers/tickers_provider.dart';
@@ -55,7 +56,15 @@ class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(symbol),
-        actions: [_FavoriteToggle(symbol: symbol)],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_alert_outlined),
+            tooltip: 'Add price alert',
+            onPressed: () =>
+                showCreateAlertDialog(context, symbol: symbol, market: 'spot'),
+          ),
+          _FavoriteToggle(symbol: symbol),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
