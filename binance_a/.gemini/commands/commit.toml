@@ -1,0 +1,16 @@
+name = "commit"
+description = "Generate a conventional commit message for staged changes"
+
+[[prompts]]
+role = "user"
+content = """
+Analyze the staged changes and generate a commit message following the Conventional Commits specification.
+- Use the format: <type>(<scope>): <description>
+- Allowed types: feat, fix, docs, style, refactor, test, chore, perf, build, ci, revert
+- Keep the description concise and in the imperative mood.
+- If there are breaking changes, add '!' after the type/scope and include 'BREAKING CHANGE:' in the footer.
+- The scope should be the name of the module or component affected (e.g., 'auth', 'network', 'ui').
+"""
+
+[execution]
+command = "git diff --staged"
