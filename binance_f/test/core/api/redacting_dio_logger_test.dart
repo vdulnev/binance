@@ -30,7 +30,7 @@ class FakeRequestInterceptorHandler extends RequestInterceptorHandler {
 
 class FakeResponseInterceptorHandler extends ResponseInterceptorHandler {
   @override
-  void next(Response response) {}
+  void next(Response<dynamic> response) {}
 }
 
 void main() {
@@ -57,9 +57,9 @@ void main() {
           'Content-Type': 'application/json',
         },
       );
-      
+
       logger.onRequest(options, FakeRequestInterceptorHandler());
-      
+
       expect(talker.lastDebug, contains('signature=%2A%2A%2A'));
       expect(talker.lastDebug, contains('symbol=BTCUSDT'));
       expect(talker.lastDebug, contains('X-MBX-APIKEY: ***'));
@@ -78,9 +78,9 @@ void main() {
         }),
         statusCode: 200,
       );
-      
+
       logger.onResponse(response, FakeResponseInterceptorHandler());
-      
+
       expect(talker.lastDebug, contains('signature=%2A%2A%2A'));
       expect(talker.lastDebug, contains('X-MBX-APIKEY: ***'));
     });
@@ -99,9 +99,9 @@ void main() {
           statusCode: 400,
         ),
       );
-      
+
       logger.onError(err, FakeErrorInterceptorHandler());
-      
+
       expect(talker.lastError, contains('signature=%2A%2A%2A'));
       expect(talker.lastError, contains('X-MBX-APIKEY: ***'));
     });
@@ -111,9 +111,9 @@ void main() {
         'X-MBX-APIKEY': 'secret-key',
         'Content-Type': 'application/json',
       };
-      
+
       final redacted = RedactingDioLogger.redactHeaders(headers);
-      
+
       expect(redacted['X-MBX-APIKEY'], '***');
       expect(redacted['Content-Type'], 'application/json');
     });

@@ -43,7 +43,9 @@ class RedactingDioLogger extends Interceptor {
     final method = response.requestOptions.method;
     final uri = _redactUri(response.requestOptions.uri);
     final headers = redactHeaders(response.headers.map);
-    _talker.debug('HTTP ← ${response.statusCode} $method $uri\nHeaders: $headers');
+    _talker.debug(
+      'HTTP ← ${response.statusCode} $method $uri\nHeaders: $headers',
+    );
     handler.next(response);
   }
 

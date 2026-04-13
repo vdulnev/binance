@@ -42,11 +42,11 @@ void main() {
                 'filterType': 'PRICE_FILTER',
                 'minPrice': '0.01',
                 'maxPrice': '100000.00',
-                'tickSize': '0.01'
-              }
+                'tickSize': '0.01',
+              },
             ],
-          }
-        ]
+          },
+        ],
       };
 
       when(() => spotDio.get<Map<String, dynamic>>(any())).thenAnswer(
@@ -81,8 +81,8 @@ void main() {
             'baseAsset': 'ETH',
             'quoteAsset': 'USDT',
             'filters': [],
-          }
-        ]
+          },
+        ],
       };
 
       when(() => futuresDio.get<Map<String, dynamic>>(any())).thenAnswer(
@@ -112,7 +112,7 @@ void main() {
           'volume': '100.00',
           'highPrice': '51000.00',
           'lowPrice': '49000.00',
-        }
+        },
       ];
 
       when(() => spotDio.get<List<dynamic>>(any())).thenAnswer(

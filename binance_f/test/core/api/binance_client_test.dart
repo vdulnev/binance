@@ -11,7 +11,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:talker/talker.dart';
 
 class MockEnv extends Mock implements Env {}
+
 class MockSigningInterceptor extends Mock implements SigningInterceptor {}
+
 class MockTalker extends Mock implements Talker {}
 
 void main() {
@@ -39,15 +41,17 @@ void main() {
       );
 
       expect(dio.options.baseUrl, 'https://api.binance.com');
-      
+
       final interceptors = dio.interceptors;
       expect(interceptors, anyElement(isA<MockSigningInterceptor>()));
       expect(interceptors, anyElement(isA<RateLimitInterceptor>()));
       expect(interceptors, anyElement(isA<ErrorInterceptor>()));
       expect(interceptors, anyElement(isA<RetryInterceptor>()));
       expect(interceptors, anyElement(isA<RedactingDioLogger>()));
-      
-      verify(() => talker.info(any(that: contains('spot client initialized')))).called(1);
+
+      verify(
+        () => talker.info(any(that: contains('spot client initialized'))),
+      ).called(1);
     });
 
     test('creates futures client with correct baseUrl', () {
@@ -59,7 +63,9 @@ void main() {
       );
 
       expect(dio.options.baseUrl, 'https://fapi.binance.com');
-      verify(() => talker.info(any(that: contains('futures client initialized')))).called(1);
+      verify(
+        () => talker.info(any(that: contains('futures client initialized'))),
+      ).called(1);
     });
   });
 }

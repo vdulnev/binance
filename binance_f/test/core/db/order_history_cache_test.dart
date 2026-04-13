@@ -91,22 +91,26 @@ void main() {
       expect(btcOnly.every((o) => o.symbol == 'BTCUSDT'), isTrue);
 
       // Filter by time
-      final timeFiltered = (await cache.loadSpotOrders(
-        startTime: DateTime.fromMillisecondsSinceEpoch(1500),
-        endTime: DateTime.fromMillisecondsSinceEpoch(2500),
-      ).run()).getOrElse((_) => []);
+      final timeFiltered =
+          (await cache
+                  .loadSpotOrders(
+                    startTime: DateTime.fromMillisecondsSinceEpoch(1500),
+                    endTime: DateTime.fromMillisecondsSinceEpoch(2500),
+                  )
+                  .run())
+              .getOrElse((_) => []);
       expect(timeFiltered, hasLength(1));
       expect(timeFiltered.first.orderId, 2);
     });
 
     test('saveFuturesOrders and loadFuturesOrders works', () async {
-      final orders = [
-        makeFuturesOrder(1, 'BTCUSDT', 1000),
-      ];
+      final orders = [makeFuturesOrder(1, 'BTCUSDT', 1000)];
 
       await cache.saveFuturesOrders(orders).run();
 
-      final loaded = (await cache.loadFuturesOrders().run()).getOrElse((_) => []);
+      final loaded = (await cache.loadFuturesOrders().run()).getOrElse(
+        (_) => [],
+      );
       expect(loaded, hasLength(1));
       expect(loaded.first.symbol, 'BTCUSDT');
     });
@@ -116,13 +120,14 @@ void main() {
         makeSpotOrder(1, 'BTCUSDT', 1000),
         makeSpotOrder(2, 'ETHUSDT', 2000),
       ]).run();
-      
+
       await cache.saveFuturesOrders([
         makeFuturesOrder(3, 'SOLUSDT', 3000),
       ]).run();
 
-      final spotSymbols = (await cache.cachedSymbols('spot').run())
-          .getOrElse((_) => []);
+      final spotSymbols = (await cache.cachedSymbols('spot').run()).getOrElse(
+        (_) => [],
+      );
       expect(spotSymbols, containsAll(['BTCUSDT', 'ETHUSDT']));
       expect(spotSymbols, isNot(contains('SOLUSDT')));
 
@@ -133,30 +138,36 @@ void main() {
 
     test('clear wipes everything', () async {
       await cache.saveSpotOrders([makeSpotOrder(1, 'BTCUSDT', 1000)]).run();
-      await cache.saveFuturesOrders([makeFuturesOrder(2, 'ETHUSDT', 2000)]).run();
+      await cache.saveFuturesOrders([
+        makeFuturesOrder(2, 'ETHUSDT', 2000),
+      ]).run();
 
       await cache.clear().run();
 
       final spot = (await cache.loadSpotOrders().run()).getOrElse((_) => []);
-      final futures = (await cache.loadFuturesOrders().run()).getOrElse((_) => []);
-      
+      final futures = (await cache.loadFuturesOrders().run()).getOrElse(
+        (_) => [],
+      );
+
       expect(spot, isEmpty);
       expect(futures, isEmpty);
     });
-  group('OrderHistoryCache sorting', () {
-    test('loadSpotOrders returns orders in descending time order', () async {
-      await cache.saveSpotOrders([
-        makeSpotOrder(1, 'BTCUSDT', 1000),
-        makeSpotOrder(2, 'BTCUSDT', 3000),
-        makeSpotOrder(3, 'BTCUSDT', 2000),
-      ]).run();
+    group('OrderHistoryCache sorting', () {
+      test('loadSpotOrders returns orders in descending time order', () async {
+        await cache.saveSpotOrders([
+          makeSpotOrder(1, 'BTCUSDT', 1000),
+          makeSpotOrder(2, 'BTCUSDT', 3000),
+          makeSpotOrder(3, 'BTCUSDT', 2000),
+        ]).run();
 
-      final loaded = (await cache.loadSpotOrders().run()).getOrElse((_) => []);
-      expect(loaded, hasLength(3));
-      expect(loaded[0].time, 3000);
-      expect(loaded[1].time, 2000);
-      expect(loaded[2].time, 1000);
+        final loaded = (await cache.loadSpotOrders().run()).getOrElse(
+          (_) => [],
+        );
+        expect(loaded, hasLength(3));
+        expect(loaded[0].time, 3000);
+        expect(loaded[1].time, 2000);
+        expect(loaded[2].time, 1000);
+      });
     });
-  });
   });
 }
