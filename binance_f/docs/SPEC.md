@@ -13,7 +13,7 @@ If anything here conflicts with the parent spec, the parent spec wins for behavi
 | Language | Dart ≥ 3.11.1 | null-safe, records, patterns |
 | Framework | Flutter (stable) | Material 3 |
 | State management | **Riverpod** (`flutter_riverpod`) | `Notifier` / `AsyncNotifier` providers |
-| Routing | **auto_route** | code-gen, typed routes, guards |
+| Routing | **auto_route** | declarative routes typed via `PageRouteInfo` |
 | DI / service location | **get_it** | registered in `lib/core/di/` |
 | Functional programming | **fpdart** | error handling |
 | Logging | **Talker** + custom redacting Dio logger + `talker_flutter` | in-process redaction of secrets |
@@ -67,9 +67,10 @@ lib/
 │   │   ├── app_database.dart      # drift
 │   │   └── tables/
 │   ├── logging/talker.dart
-│   ├── routing/
+│   ├── router/
 │   │   ├── app_router.dart        # @AutoRouterConfig
-│   │   └── auth_guard.dart
+│   │   ├── navigation_provider.dart # Riverpod navigation stack
+│   │   └── root_screen.dart       # AutoRouter.declarative() wrapper
 │   ├── env/env.dart               # mainnet ↔ testnet, spot + futures base URLs
 │   ├── models/app_exception.dart  # sealed Freezed union
 │   └── theme/app_theme.dart
@@ -117,9 +118,18 @@ Tests mirror `lib/` under `test/`.
 - Compose providers with `ref.watch(otherProvider)`.
 
 ### Routing (auto_route)
+- **Declarative routing via `AutoRouter.declarative()`** — all navigation state flows through a Riverpod provider.
 - Single `AppRouter` with `@AutoRouterConfig`.
-- `AuthGuard` reads `sessionManager.hasCredentials()` and redirects to `LoginRoute` when missing.
-- Deep link targets: symbol detail (`/symbol/:market/:symbol`), order detail.
+- `RootScreen` wraps `AutoRouter.declarative()` and renders routes based on:
+  - `authProvider` state (auth ↔ unauth)
+  - `navigationProvider` stack (declarative nav stack)
+- `NavigationNotifier` (Riverpod) manages the navigation stack:
+  - `push()` — add route to stack
+  - `pop()` — remove from stack
+  - `clear()` — reset stack (used on logout)
+  - Helper methods for common destinations (`pushSymbolDetail`, `pushOrderTicket`, etc.)
+- **Never use imperative `context.router.push/pop`** — all navigation goes through `ref.read(navigationProvider.notifier)`.
+- Deep link targets: symbol detail (`/symbol/:symbol`), order detail.
 
 ### Error handling
 - Use functional style for error handling. Do not use try/catch.
@@ -146,7 +156,7 @@ Tests mirror `lib/` under `test/`.
 
 ### Environment selection (FR-1.3, EC-11)
 - The environment (`mainnet` | `testnet`) is **chosen on the login screen** and persisted alongside the credentials in secure storage under key `binance_env`.
-- On launch, `SessionManager.restore()` reads `binance_env` and configures the Dio / WsClient base URLs before the auth guard runs.
+- On launch, `SessionManager.restore()` reads `binance_env` and configures the Dio / WsClient base URLs before the app renders.
 - Switching environments **requires logout**. The settings screen exposes this; there is no runtime toggle while logged in.
 - `--dart-define=BINANCE_ENV=testnet` remains as a dev override that pre-selects testnet on a cleared install.
 
@@ -197,7 +207,8 @@ Only ephemeral UI flags (last selected tab, last viewed symbol). Never credentia
 3. Deletes `binance_api_key`, `binance_api_secret`, `binance_env`.
 4. Wipes `favorites`, `price_alerts`, `cached_portfolio`, `cached_orders`, `cached_symbols` from Drift.
 5. **Keeps** `settings` (theme + quote asset survive).
-6. Invalidates all Riverpod providers that hold account data.
+6. Clears the navigation stack via `navigationProvider.clear()`.
+7. Invalidates all Riverpod providers that hold account data.
 
 ---
 
@@ -299,9 +310,11 @@ Pre-commit checklist (matches the global Dart rules):
 
 Mapped 1:1 to the parent spec §10 phase table. Each phase ends with: tests green, analyzer clean, manual smoke on at least one mobile and one desktop platform.
 
+**Status:** Phases 1–10 are **committed** (implementations complete). Phases 11–12 remain (polish + E2E).
+
 | # | Phase | Flutter scope |
 |---|---|---|
-| 1 | Scaffold + auth + signing + time sync + login | `CredentialsManager`, `SigningInterceptor`, `ErrorInterceptor`, `RateLimitInterceptor`, `RedactingDioLogger`, `AppException`, `AuthRepository.verifyCredentials`, login screen, auth guard, get_it wiring |
+| 1 | Scaffold + auth + signing + time sync + login | `CredentialsManager`, `SigningInterceptor`, `ErrorInterceptor`, `RateLimitInterceptor`, `RedactingDioLogger`, `AppException`, `AuthRepository.verifyCredentials`, login screen, declarative routing setup, get_it wiring |
 | 2 | Env toggle + session persistence + logout | Env picker on login screen, `binance_env` persistence, two Dio instances (spot/futures), `SessionManager.restore()`, logout flow with full wipe |
 | 3 | Portfolio view + user data stream | `PortfolioRepository` (spot `/api/v3/account` + futures `/fapi/v2/account`), total value in quote asset, `UserDataStream` (spot + futures), Drift `cached_portfolio` |
 | 4 | Markets + favorites + symbol detail WS | `MarketsRepository` (exchangeInfo cache), `FavoritesRepository` (Drift), ticker/depth/trade WS, symbol detail screen scaffold |
@@ -325,6 +338,7 @@ These are *implementation* questions; the product-level open questions live in t
 3. Desktop window state persistence (`window_manager`) — now or defer?
 4. Crash reporting — Sentry, Firebase Crashlytics, or Talker-only log export?
 5. Does `k_chart_plus` cover all drawings required by FR-4.4, or do we need to extend/fork for fib retracement and rectangle?
+6. macOS code signing — pending for App Store distribution.
 
 These do not block Phase 1; revisit before Phase 7 (charting).
 
@@ -334,5 +348,6 @@ These do not block Phase 1; revisit before Phase 7 (charting).
 
 | Version | Date       | Changes |
 |---------|------------|---------|
+| 0.3.0   | 2026-04-14 | Refactored to declarative navigation: `AutoRouter.declarative()` + `NavigationNotifier` (Riverpod), removed imperative routing and guards. Phases 1–10 implemented and committed. |
 | 0.2.0   | 2026-04-07 | Realigned to parent spec 0.1.0: futures added, env-at-login with persistence, two Dio instances, filter validation + destructive confirmations, full logout wipe, user data stream (spot + futures), transfers view, offline caching w/ stale markers, manual theme only, phases 1–12 matched to parent, testnet integration tests. |
 | 0.1.0   | 2026-04-07 | Initial Flutter implementation spec. |
