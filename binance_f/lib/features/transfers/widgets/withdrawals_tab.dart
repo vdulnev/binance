@@ -17,14 +17,12 @@ class WithdrawalsTab extends ConsumerWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, _) => _ErrorView(
         message: err.toString(),
-        onRetry: () =>
-            ref.read(withdrawalsProvider.notifier).refresh(),
+        onRetry: () => ref.read(withdrawalsProvider.notifier).refresh(),
       ),
       data: (withdrawals) => withdrawals.isEmpty
           ? const _EmptyState(label: 'No withdrawals found')
           : RefreshIndicator(
-              onRefresh: () =>
-                  ref.read(withdrawalsProvider.notifier).refresh(),
+              onRefresh: () => ref.read(withdrawalsProvider.notifier).refresh(),
               child: ListView.separated(
                 padding: const EdgeInsets.only(bottom: 16),
                 itemCount: withdrawals.length,
@@ -95,10 +93,7 @@ void _showWithdrawalDetail(BuildContext context, Withdrawal withdrawal) {
           ),
           const SizedBox(height: 16),
           _DetailRow(label: 'Coin', value: withdrawal.coin),
-          _DetailRow(
-            label: 'Amount',
-            value: withdrawal.amount.toString(),
-          ),
+          _DetailRow(label: 'Amount', value: withdrawal.amount.toString()),
           _DetailRow(
             label: 'Fee',
             value: '${withdrawal.transactionFee} ${withdrawal.coin}',
@@ -108,10 +103,7 @@ void _showWithdrawalDetail(BuildContext context, Withdrawal withdrawal) {
           _DetailRow(label: 'Address', value: withdrawal.address),
           if (withdrawal.addressTag != null &&
               withdrawal.addressTag!.isNotEmpty)
-            _DetailRow(
-              label: 'Tag/Memo',
-              value: withdrawal.addressTag!,
-            ),
+            _DetailRow(label: 'Tag/Memo', value: withdrawal.addressTag!),
           _DetailRow(label: 'TxID', value: withdrawal.txId),
           _DetailRow(
             label: 'Time',
@@ -157,10 +149,7 @@ class _DetailRow extends StatelessWidget {
                   ),
                 );
               },
-              child: Text(
-                value,
-                style: const TextStyle(fontSize: 13),
-              ),
+              child: Text(value, style: const TextStyle(fontSize: 13)),
             ),
           ),
         ],
@@ -212,10 +201,7 @@ class _ErrorView extends StatelessWidget {
           children: [
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            FilledButton.tonal(
-              onPressed: onRetry,
-              child: const Text('Retry'),
-            ),
+            FilledButton.tonal(onPressed: onRetry, child: const Text('Retry')),
           ],
         ),
       ),

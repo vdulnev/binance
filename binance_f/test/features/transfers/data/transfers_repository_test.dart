@@ -62,13 +62,17 @@ void main() {
               'insertTime': 1700001000000,
             },
           ],
-          requestOptions: RequestOptions(path: '/sapi/v1/capital/deposit/hisrec'),
+          requestOptions: RequestOptions(
+            path: '/sapi/v1/capital/deposit/hisrec',
+          ),
           statusCode: 200,
         ),
       );
 
       final result = await repo.getDeposits().run();
-      final deposits = result.getOrElse((_) => throw StateError('expected Right'));
+      final deposits = result.getOrElse(
+        (_) => throw StateError('expected Right'),
+      );
 
       expect(deposits, hasLength(2));
       // Should be sorted newest-first
@@ -88,13 +92,17 @@ void main() {
       ).thenAnswer(
         (_) async => Response<List<dynamic>>(
           data: [],
-          requestOptions: RequestOptions(path: '/sapi/v1/capital/deposit/hisrec'),
+          requestOptions: RequestOptions(
+            path: '/sapi/v1/capital/deposit/hisrec',
+          ),
           statusCode: 200,
         ),
       );
 
       final result = await repo.getDeposits().run();
-      final deposits = result.getOrElse((_) => throw StateError('expected Right'));
+      final deposits = result.getOrElse(
+        (_) => throw StateError('expected Right'),
+      );
       expect(deposits, isEmpty);
     });
 
@@ -148,16 +156,14 @@ void main() {
       );
 
       final result = await repo.getWithdrawals().run();
-      final withdrawals =
-          result.getOrElse((_) => throw StateError('expected Right'));
+      final withdrawals = result.getOrElse(
+        (_) => throw StateError('expected Right'),
+      );
 
       expect(withdrawals, hasLength(1));
       expect(withdrawals.first.coin, 'ETH');
       expect(withdrawals.first.amount, Decimal.parse('1.5'));
-      expect(
-        withdrawals.first.transactionFee,
-        Decimal.parse('0.0005'),
-      );
+      expect(withdrawals.first.transactionFee, Decimal.parse('0.0005'));
       expect(withdrawals.first.statusLabel, 'Completed');
     });
   });
@@ -186,8 +192,7 @@ void main() {
       );
 
       final result = await repo.getDepositAddress(coin: 'BTC').run();
-      final addr =
-          result.getOrElse((_) => throw StateError('expected Right'));
+      final addr = result.getOrElse((_) => throw StateError('expected Right'));
 
       expect(addr.coin, 'BTC');
       expect(addr.address, startsWith('bc1q'));

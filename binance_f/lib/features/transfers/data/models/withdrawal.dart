@@ -18,6 +18,7 @@ sealed class Withdrawal with _$Withdrawal {
     @DecimalConverter() required Decimal transactionFee,
     required String coin,
     required String network,
+
     /// 0: email sent, 1: cancelled, 2: awaiting approval,
     /// 3: rejected, 4: processing, 5: failure, 6: completed
     required int status,

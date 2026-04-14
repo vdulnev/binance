@@ -18,12 +18,10 @@ class FlutterSecureStorageService implements SecureStorageService {
       _storage.write(key: key, value: value);
 
   @override
-  Future<String?> read({required String key}) =>
-      _storage.read(key: key);
+  Future<String?> read({required String key}) => _storage.read(key: key);
 
   @override
-  Future<void> delete({required String key}) =>
-      _storage.delete(key: key);
+  Future<void> delete({required String key}) => _storage.delete(key: key);
 
   @override
   Future<void> deleteAll() => _storage.deleteAll();

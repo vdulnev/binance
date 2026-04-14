@@ -41,15 +41,19 @@ class NotificationService {
   /// call multiple times. Returns `true` if granted.
   static Future<bool> requestPermissionIfNeeded() async {
     // Android 13+ requires explicit permission.
-    final android = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (android != null) {
       return await android.requestNotificationsPermission() ?? false;
     }
 
     // iOS / macOS request via Darwin implementation.
-    final darwin = _plugin.resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>();
+    final darwin = _plugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
     if (darwin != null) {
       return await darwin.requestPermissions(
             alert: true,
@@ -59,8 +63,10 @@ class NotificationService {
           false;
     }
 
-    final macos = _plugin.resolvePlatformSpecificImplementation<
-        MacOSFlutterLocalNotificationsPlugin>();
+    final macos = _plugin
+        .resolvePlatformSpecificImplementation<
+          MacOSFlutterLocalNotificationsPlugin
+        >();
     if (macos != null) {
       return await macos.requestPermissions(
             alert: true,
@@ -78,8 +84,9 @@ class NotificationService {
     PriceAlert alert,
     Decimal currentPrice,
   ) async {
-    final directionLabel =
-        alert.direction == AlertDirection.above ? 'above' : 'below';
+    final directionLabel = alert.direction == AlertDirection.above
+        ? 'above'
+        : 'below';
 
     const androidDetails = AndroidNotificationDetails(
       _channelId,
@@ -101,7 +108,8 @@ class NotificationService {
     await _plugin.show(
       id: alert.id,
       title: '${alert.symbol} Price Alert',
-      body: '${alert.symbol} crossed $directionLabel '
+      body:
+          '${alert.symbol} crossed $directionLabel '
           '${alert.targetPrice} — now at $currentPrice',
       notificationDetails: details,
     );

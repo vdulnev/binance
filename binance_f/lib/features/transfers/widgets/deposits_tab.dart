@@ -22,8 +22,7 @@ class DepositsTab extends ConsumerWidget {
       data: (deposits) => deposits.isEmpty
           ? const _EmptyState(label: 'No deposits found')
           : RefreshIndicator(
-              onRefresh: () =>
-                  ref.read(depositsProvider.notifier).refresh(),
+              onRefresh: () => ref.read(depositsProvider.notifier).refresh(),
               child: ListView.separated(
                 padding: const EdgeInsets.only(bottom: 16),
                 itemCount: deposits.length,
@@ -54,9 +53,7 @@ class _DepositTile extends StatelessWidget {
       leading: CircleAvatar(
         backgroundColor: scheme.primaryContainer,
         child: Text(
-          deposit.coin.length > 3
-              ? deposit.coin.substring(0, 3)
-              : deposit.coin,
+          deposit.coin.length > 3 ? deposit.coin.substring(0, 3) : deposit.coin,
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
@@ -87,10 +84,7 @@ void _showDepositDetail(BuildContext context, Deposit deposit) {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Deposit Detail',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+          Text('Deposit Detail', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 16),
           _DetailRow(label: 'Coin', value: deposit.coin),
           _DetailRow(label: 'Amount', value: deposit.amount.toString()),
@@ -144,10 +138,7 @@ class _DetailRow extends StatelessWidget {
                   ),
                 );
               },
-              child: Text(
-                value,
-                style: const TextStyle(fontSize: 13),
-              ),
+              child: Text(value, style: const TextStyle(fontSize: 13)),
             ),
           ),
         ],
@@ -197,15 +188,9 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              message,
-              textAlign: TextAlign.center,
-            ),
+            Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            FilledButton.tonal(
-              onPressed: onRetry,
-              child: const Text('Retry'),
-            ),
+            FilledButton.tonal(onPressed: onRetry, child: const Text('Retry')),
           ],
         ),
       ),

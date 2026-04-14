@@ -80,10 +80,7 @@ class BinanceTransfersRepository implements TransfersRepository {
               .toList(growable: false)
             ..sort((a, b) => b.insertTime.compareTo(a.insertTime));
       return deposits;
-    }, _toAppException).bimap(
-      _cleanup(cancelToken),
-      _cleanup(cancelToken),
-    );
+    }, _toAppException).bimap(_cleanup(cancelToken), _cleanup(cancelToken));
   }
 
   @override
@@ -118,14 +115,9 @@ class BinanceTransfersRepository implements TransfersRepository {
               .whereType<Map<String, dynamic>>()
               .map(Withdrawal.fromJson)
               .toList(growable: false)
-            ..sort(
-              (a, b) => b.applyDateTime.compareTo(a.applyDateTime),
-            );
+            ..sort((a, b) => b.applyDateTime.compareTo(a.applyDateTime));
       return withdrawals;
-    }, _toAppException).bimap(
-      _cleanup(cancelToken),
-      _cleanup(cancelToken),
-    );
+    }, _toAppException).bimap(_cleanup(cancelToken), _cleanup(cancelToken));
   }
 
   @override
@@ -146,10 +138,7 @@ class BinanceTransfersRepository implements TransfersRepository {
         cancelToken: cancelToken,
       );
       return DepositAddress.fromJson(response.data!);
-    }, _toAppException).bimap(
-      _cleanup(cancelToken),
-      _cleanup(cancelToken),
-    );
+    }, _toAppException).bimap(_cleanup(cancelToken), _cleanup(cancelToken));
   }
 
   T Function(T) _cleanup<T>(CancelToken token) {

@@ -17,6 +17,7 @@ sealed class Deposit with _$Deposit {
     @DecimalConverter() required Decimal amount,
     required String coin,
     required String network,
+
     /// 0: pending, 6: credited, 1: success
     required int status,
     required String address,

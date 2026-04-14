@@ -41,12 +41,7 @@ class TransfersScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: const TabBarView(
-          children: [
-            DepositsTab(),
-            WithdrawalsTab(),
-          ],
-        ),
+        body: const TabBarView(children: [DepositsTab(), WithdrawalsTab()]),
       ),
     );
   }

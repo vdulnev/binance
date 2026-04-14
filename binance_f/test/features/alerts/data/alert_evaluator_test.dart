@@ -58,9 +58,7 @@ void main() {
     when(
       () => mockRepo.watchEnabled(),
     ).thenAnswer((_) => alertsController.stream);
-    when(() => mockWs.tickerStream).thenAnswer(
-      (_) => tickerController.stream,
-    );
+    when(() => mockWs.tickerStream).thenAnswer((_) => tickerController.stream);
     when(
       () => mockWs.subscribe(any(), any(), market: any(named: 'market')),
     ).thenAnswer((_) async {});
