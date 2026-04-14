@@ -2,7 +2,9 @@ package com.example.binance_a.core.network
 
 import kotlinx.serialization.Serializable
 import retrofit2.http.GET
-import retrofit2.http.Query
+import retrofit2.http.Tag
+
+data class RequestCredentials(val apiKey: String, val apiSecret: String)
 
 interface BinanceApiService {
 
@@ -10,7 +12,9 @@ interface BinanceApiService {
     suspend fun getServerTime(): ServerTimeResponse
 
     @GET("api/v3/account")
-    suspend fun getAccountInfo(): AccountInfoResponse
+    suspend fun getAccountInfo(
+        @Tag credentials: RequestCredentials? = null
+    ): AccountInfoResponse
 
     @GET("api/v3/exchangeInfo")
     suspend fun getExchangeInfo(): ExchangeInfoResponse

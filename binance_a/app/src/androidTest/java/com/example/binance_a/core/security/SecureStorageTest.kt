@@ -3,6 +3,8 @@ package com.example.binance_a.core.security
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.binance_a.core.logging.Logger
+import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -17,8 +19,9 @@ class SecureStorageTest {
     @Before
     fun setup() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        secureStorage = SecureStorage(context)
-        
+        val logger: Logger = mockk(relaxed = true)
+        secureStorage = SecureStorage(context, logger)
+
         // Ensure starting clean
         secureStorage.clear()
     }

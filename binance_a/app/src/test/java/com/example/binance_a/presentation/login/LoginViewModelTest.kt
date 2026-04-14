@@ -2,7 +2,6 @@ package com.example.binance_a.presentation.login
 
 import com.example.binance_a.core.common.Result
 import com.example.binance_a.core.logging.Logger
-import com.example.binance_a.core.network.TimeSyncManager
 import com.example.binance_a.core.security.SecureStorage
 import com.example.binance_a.domain.usecase.VerifyCredentialsUseCase
 import io.mockk.coEvery
@@ -10,8 +9,6 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -27,7 +24,6 @@ class LoginViewModelTest {
 
     private lateinit var secureStorage: SecureStorage
     private lateinit var verifyCredentialsUseCase: VerifyCredentialsUseCase
-    private lateinit var timeSyncManager: TimeSyncManager
     private lateinit var logger: Logger
     private lateinit var viewModel: LoginViewModel
 
@@ -38,7 +34,6 @@ class LoginViewModelTest {
         Dispatchers.setMain(testDispatcher)
         secureStorage = mockk(relaxed = true)
         verifyCredentialsUseCase = mockk()
-        timeSyncManager = mockk(relaxed = true)
         logger = mockk(relaxed = true)
 
         viewModel = LoginViewModel(secureStorage, verifyCredentialsUseCase, logger)
@@ -68,11 +63,9 @@ class LoginViewModelTest {
             verifyCredentialsUseCase("valid_key", "valid_secret", "TESTNET")
         } returns Result.Success(Unit)
 
-        val successEvent = async { viewModel.loginSuccess.first() }
         viewModel.login()
         advanceUntilIdle()
 
-        successEvent.await() // confirms event was emitted
         assertEquals(false, viewModel.uiState.value.isLoading)
         assertEquals(null, viewModel.uiState.value.error)
 
@@ -80,36 +73,34 @@ class LoginViewModelTest {
     }
 
     @Test
-    fun `login failure clears credentials and shows error`() = runTest {
+    fun `login failure shows error without saving credentials`() = runTest {
         viewModel.onApiKeyChange("valid_key")
         viewModel.onApiSecretChange("invalid_secret")
 
-        coEvery { 
-            verifyCredentialsUseCase("valid_key", "invalid_secret", "MAINNET") 
+        coEvery {
+            verifyCredentialsUseCase("valid_key", "invalid_secret", "MAINNET")
         } returns Result.Error(com.example.binance_a.core.common.BinanceException(message = "Invalid signature"))
 
         viewModel.login()
         advanceUntilIdle()
 
         assertEquals("Invalid signature", viewModel.uiState.value.error)
-
-        coVerify { secureStorage.clear() }
+        coVerify(exactly = 0) { secureStorage.saveCredentials(any(), any(), any()) }
     }
 
     @Test
-    fun `unexpected exception during login clears credentials and shows error`() = runTest {
+    fun `unexpected exception during login shows error without saving credentials`() = runTest {
         viewModel.onApiKeyChange("valid_key")
         viewModel.onApiSecretChange("valid_secret")
 
-        coEvery { 
-            verifyCredentialsUseCase(any(), any(), any()) 
+        coEvery {
+            verifyCredentialsUseCase(any(), any(), any())
         } throws RuntimeException("Network crash")
 
         viewModel.login()
         advanceUntilIdle()
 
         assertEquals("Network crash", viewModel.uiState.value.error)
-        
-        coVerify { secureStorage.clear() }
+        coVerify(exactly = 0) { secureStorage.saveCredentials(any(), any(), any()) }
     }
 }

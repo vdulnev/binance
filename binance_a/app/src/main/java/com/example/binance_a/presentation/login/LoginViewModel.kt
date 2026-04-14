@@ -6,11 +6,9 @@ import com.example.binance_a.core.common.Result
 import com.example.binance_a.core.logging.Logger
 import com.example.binance_a.core.security.SecureStorage
 import com.example.binance_a.domain.usecase.VerifyCredentialsUseCase
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -24,9 +22,6 @@ class LoginViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
-
-    private val _loginSuccess = Channel<Unit>(Channel.BUFFERED)
-    val loginSuccess = _loginSuccess.receiveAsFlow()
 
     init {
         logger.d("LoginViewModel initialized")
@@ -58,23 +53,17 @@ class LoginViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // 1. Save credentials so the Interceptor can use them for verification
                 val environment = if (state.isTestnet) "TESTNET" else "MAINNET"
-                logger.d("Saving credentials for environment: $environment")
-                secureStorage.saveCredentials(state.apiKey, state.apiSecret, environment)
 
-                // 2. Verify credentials (Interceptor will sign this request)
-                logger.d("Calling VerifyCredentialsUseCase")
+                logger.d("Verifying credentials for environment: $environment")
                 when (val result = verifyCredentialsUseCase(state.apiKey, state.apiSecret, environment)) {
                     is Result.Success -> {
-                        logger.i("Login successful")
+                        logger.i("Login successful, saving credentials")
+                        secureStorage.saveCredentials(state.apiKey, state.apiSecret, environment)
                         _uiState.value = _uiState.value.copy(isLoading = false)
-                        _loginSuccess.send(Unit)
                     }
                     is Result.Error -> {
                         logger.e(result.exception, "Login verification failed")
-                        // Verification failed, clear sensitive data
-                        secureStorage.clear()
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
                             error = result.exception.message ?: "Login failed"
@@ -84,7 +73,6 @@ class LoginViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 logger.e(e, "Unexpected error during login")
-                secureStorage.clear()
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     error = e.message ?: "Unexpected error"

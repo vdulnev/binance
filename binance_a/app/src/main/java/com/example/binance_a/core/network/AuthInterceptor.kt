@@ -16,11 +16,13 @@ class AuthInterceptor @Inject constructor(
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
-        val apiKey = secureStorage.getApiKey()
+        val tagCredentials = originalRequest.tag(RequestCredentials::class.java)
+        val apiKey = tagCredentials?.apiKey ?: secureStorage.getApiKey()
+        val apiSecret = tagCredentials?.apiSecret ?: secureStorage.getApiSecret()
 
         // If no API key, proceed without signing (for public endpoints)
         if (apiKey.isNullOrEmpty()) {
-            logger.d("No API key found in SecureStorage. Proceeding without signing request: ${originalRequest.url}")
+            logger.d("No API key found. Proceeding without signing request: ${originalRequest.url}")
             return chain.proceed(originalRequest)
         }
 
@@ -31,8 +33,7 @@ class AuthInterceptor @Inject constructor(
             .build()
 
         val query = url.encodedQuery.orEmpty()
-        val apiSecret = secureStorage.getApiSecret().orEmpty()
-        val signature = hmacSha256(apiSecret, query)
+        val signature = hmacSha256(apiSecret.orEmpty(), query)
 
         val signedUrl = url.newBuilder()
             .addQueryParameter("signature", signature)

@@ -10,14 +10,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.binance_a.presentation.ui.theme.BinanceATheme
 
 @Composable
 fun HomeScreen(
-    onLogout: () -> Unit = {}
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
     Scaffold(
-        topBar = { TopBar(onLogout = onLogout) }
+        topBar = { TopBar(onLogout = { viewModel.logout() }) }
     ) { paddingValues ->
         Column(
             modifier = Modifier

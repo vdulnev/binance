@@ -3,6 +3,7 @@ package com.example.binance_a.domain.usecase
 import com.example.binance_a.core.common.Result
 import com.example.binance_a.core.logging.Logger
 import com.example.binance_a.core.network.BinanceApiService
+import com.example.binance_a.core.network.RequestCredentials
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -33,21 +34,21 @@ class VerifyCredentialsUseCaseTest {
             canTrade = true, canWithdraw = true, canDeposit = true, updateTime = 12345L,
             accountType = "SPOT", balances = emptyList(), permissions = emptyList()
         )
-        coEvery { apiService.getAccountInfo() } returns mockResponse
+        coEvery { apiService.getAccountInfo(any()) } returns mockResponse
 
         // Act
         val result = useCase("test_key", "test_secret", "MAINNET")
 
         // Assert
         assertTrue(result is Result.Success)
-        coVerify { apiService.getAccountInfo() }
+        coVerify { apiService.getAccountInfo(any()) }
     }
 
     @Test
     fun `invoke returns error when api call throws exception`() = runTest {
         // Arrange
         val exceptionMessage = "Network error"
-        coEvery { apiService.getAccountInfo() } throws RuntimeException(exceptionMessage)
+        coEvery { apiService.getAccountInfo(any()) } throws RuntimeException(exceptionMessage)
 
         // Act
         val result = useCase("test_key", "test_secret", "MAINNET")
@@ -55,6 +56,6 @@ class VerifyCredentialsUseCaseTest {
         // Assert
         assertTrue(result is Result.Error)
         assertEquals(exceptionMessage, (result as Result.Error).exception.message)
-        coVerify { apiService.getAccountInfo() }
+        coVerify { apiService.getAccountInfo(any()) }
     }
 }

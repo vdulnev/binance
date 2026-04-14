@@ -4,6 +4,7 @@ import com.example.binance_a.core.common.BinanceException
 import com.example.binance_a.core.common.Result
 import com.example.binance_a.core.logging.Logger
 import com.example.binance_a.core.network.BinanceApiService
+import com.example.binance_a.core.network.RequestCredentials
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -20,19 +21,12 @@ class VerifyCredentialsUseCase @Inject constructor(
         return withContext(Dispatchers.IO) {
             try {
                 logger.d("Starting credentials verification for environment: $environment")
-                // The AuthInterceptor will handle signing using the credentials
-                // stored temporarily in SecureStorage by the login flow.
-                apiService.getAccountInfo()
+                apiService.getAccountInfo(RequestCredentials(apiKey, apiSecret))
                 logger.d("Credentials verification successful")
                 Result.Success(Unit)
             } catch (e: Exception) {
                 logger.e(e, "Credentials verification failed")
-                val binanceException = if (e.message?.contains("code") == true) {
-                    BinanceException(message = e.message ?: "Verification failed")
-                } else {
-                    BinanceException(message = e.message ?: "Verification failed")
-                }
-                Result.Error(binanceException)
+                Result.Error(BinanceException(message = e.message ?: "Verification failed"))
             }
         }
     }
