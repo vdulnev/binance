@@ -101,9 +101,9 @@ void main() {
   });
 
   group('AuthNotifier', () {
-    test('initial state is unauthenticated', () {
+    test('initial state is initial', () {
       final state = container.read(authProvider);
-      expect(state, isA<AuthUnauthenticated>());
+      expect(state, isA<AuthInitial>());
     });
 
     test('login success transitions to authenticated', () async {

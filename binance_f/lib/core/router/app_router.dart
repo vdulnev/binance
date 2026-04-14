@@ -9,45 +9,30 @@ import '../../features/symbol/widgets/symbol_detail_screen.dart';
 import '../../features/trade/widgets/futures_order_ticket_screen.dart';
 import '../../features/trade/widgets/order_ticket_screen.dart';
 import '../../features/transfers/widgets/transfers_screen.dart';
-import 'auth_guard.dart';
+import 'root_screen.dart';
 
 part 'app_router.gr.dart';
 
 @AutoRouterConfig(replaceInRouteName: 'Screen,Route')
 class AppRouter extends RootStackRouter {
-  AppRouter({required AuthGuard authGuard}) : _authGuard = authGuard;
-
-  final AuthGuard _authGuard;
-
   @override
   List<AutoRoute> get routes => [
-    AutoRoute(page: HomeRoute.page, initial: true, guards: [_authGuard]),
     AutoRoute(
-      page: SymbolDetailRoute.page,
-      path: '/symbol/:symbol',
-      guards: [_authGuard],
+      page: RootRoute.page,
+      initial: true,
+      children: [
+        AutoRoute(page: LoginRoute.page, path: 'login'),
+        AutoRoute(page: HomeRoute.page, path: ''),
+        AutoRoute(page: SymbolDetailRoute.page, path: 'symbol/:symbol'),
+        AutoRoute(page: OrderTicketRoute.page, path: 'trade/:symbol'),
+        AutoRoute(
+          page: FuturesOrderTicketRoute.page,
+          path: 'futures-trade/:symbol',
+        ),
+        AutoRoute(page: OrderHistoryRoute.page, path: 'history'),
+        AutoRoute(page: AlertsRoute.page, path: 'alerts'),
+        AutoRoute(page: TransfersRoute.page, path: 'transfers'),
+      ],
     ),
-    AutoRoute(
-      page: OrderTicketRoute.page,
-      path: '/trade/:symbol',
-      guards: [_authGuard],
-    ),
-    AutoRoute(
-      page: FuturesOrderTicketRoute.page,
-      path: '/futures-trade/:symbol',
-      guards: [_authGuard],
-    ),
-    AutoRoute(
-      page: OrderHistoryRoute.page,
-      path: '/history',
-      guards: [_authGuard],
-    ),
-    AutoRoute(page: AlertsRoute.page, path: '/alerts', guards: [_authGuard]),
-    AutoRoute(
-      page: TransfersRoute.page,
-      path: '/transfers',
-      guards: [_authGuard],
-    ),
-    AutoRoute(page: LoginRoute.page, path: '/login'),
   ];
 }

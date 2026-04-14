@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/app_exception.dart';
+import '../../../core/router/navigation_provider.dart';
 import '../../markets/data/models/ticker_24h.dart';
 import '../../markets/providers/tickers_provider.dart';
 import '../data/models/order_enums.dart';
@@ -278,7 +279,7 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
 
       // FR-5.5: Show order receipt.
       await showOrderReceiptDialog(context: context, order: order);
-      if (mounted) context.router.maybePop();
+      if (mounted) ref.read(navigationProvider.notifier).pop();
     } on AppException catch (e) {
       if (!mounted) return;
       setState(() {

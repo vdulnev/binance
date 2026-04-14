@@ -3,7 +3,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/router/app_router.dart';
+import '../../../core/router/navigation_provider.dart';
 import '../../alerts/widgets/create_alert_dialog.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../../markets/data/models/ticker_24h.dart';
@@ -92,7 +92,8 @@ class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen>
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.router.push(OrderTicketRoute(symbol: symbol)),
+        onPressed: () =>
+            ref.read(navigationProvider.notifier).pushOrderTicket(symbol),
         icon: const Icon(Icons.add),
         label: const Text('Trade'),
       ),

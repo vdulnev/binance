@@ -5,14 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/env/env.dart';
 import '../../../core/env/env_manager.dart';
-import '../../../core/router/app_router.dart';
+import '../../../core/router/navigation_provider.dart';
 import '../../alerts/widgets/alerts_tab.dart';
 import '../../history/widgets/order_history_tab.dart';
 import '../../markets/widgets/markets_tab.dart';
 import '../../portfolio/providers/portfolio_provider.dart';
 import '../../portfolio/widgets/portfolio_tab.dart';
 import '../providers/auth_provider.dart';
-import '../providers/auth_state.dart';
 
 /// Shell screen with a bottom navigation bar switching between the
 /// Portfolio (Phase 3) and Markets (Phase 4) tabs.
@@ -33,12 +32,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthState>(authProvider, (_, state) {
-      if (state is AuthUnauthenticated) {
-        context.router.replaceAll([const LoginRoute()]);
-      }
-    });
-
     final env = sl<EnvManager>().current.env;
 
     final titles = const ['Portfolio', 'Markets', 'History', 'Alerts'];
@@ -63,7 +56,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: const Icon(Icons.swap_horiz),
             tooltip: 'Transfers',
             onPressed: () =>
-                context.router.push(const TransfersRoute()),
+                ref.read(navigationProvider.notifier).pushTransfers(),
           ),
           IconButton(
             key: const ValueKey('portfolio-logout'),

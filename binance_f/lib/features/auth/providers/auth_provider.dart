@@ -7,6 +7,7 @@ import '../../../core/di/service_locator.dart';
 import '../../../core/env/env.dart';
 import '../../../core/env/env_manager.dart';
 import '../../../core/models/app_exception.dart';
+import '../../../core/router/navigation_provider.dart';
 import '../../alerts/data/alert_evaluator.dart';
 import '../data/auth_repository.dart';
 import 'auth_state.dart';
@@ -31,7 +32,7 @@ class AuthNotifier extends Notifier<AuthState> {
     _envManager = sl<EnvManager>();
     _talker = sl<Talker>();
     _checkSession();
-    return const AuthState.unauthenticated();
+    return const AuthState.initial();
   }
 
   Future<void> _checkSession() async {
@@ -39,6 +40,8 @@ class AuthNotifier extends Notifier<AuthState> {
     final valid = result.getOrElse((_) => false);
     if (valid) {
       state = const AuthState.authenticated();
+    } else {
+      state = const AuthState.unauthenticated();
     }
   }
 
@@ -87,10 +90,7 @@ class AuthNotifier extends Notifier<AuthState> {
       (err) => _talker.error('Logout failed', err),
       (_) => _talker.info('Logged out.'),
     );
-    // Don't ref.invalidate(portfolioProvider) here — credentials are
-    // already wiped, so a rebuild would just fail with "Not authenticated".
-    // The provider will be disposed when the home screen unmounts (auth
-    // guard navigates to LoginRoute) and rebuilt fresh on the next login.
+    ref.read(navigationProvider.notifier).clear();
     state = const AuthState.unauthenticated();
   }
 

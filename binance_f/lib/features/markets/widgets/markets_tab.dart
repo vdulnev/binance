@@ -1,8 +1,7 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/router/app_router.dart';
+import '../../../core/router/navigation_provider.dart';
 import '../../favorites/data/models/favorite_symbol.dart';
 import '../../favorites/providers/favorites_provider.dart';
 import '../data/models/symbol_info.dart';
@@ -157,7 +156,8 @@ class _FavoriteRow extends ConsumerWidget {
       baseAsset: info?.baseAsset ?? fav.symbol,
       quoteAsset: info?.quoteAsset ?? '',
       ticker: ticker,
-      onTap: () => context.router.push(SymbolDetailRoute(symbol: fav.symbol)),
+      onTap: () =>
+          ref.read(navigationProvider.notifier).pushSymbolDetail(fav.symbol),
     );
   }
 }
@@ -207,8 +207,9 @@ class _MarketSymbolList extends ConsumerWidget {
               baseAsset: info.baseAsset,
               quoteAsset: info.quoteAsset,
               ticker: ticker,
-              onTap: () =>
-                  context.router.push(SymbolDetailRoute(symbol: info.symbol)),
+              onTap: () => ref
+                  .read(navigationProvider.notifier)
+                  .pushSymbolDetail(info.symbol),
             );
           },
         );

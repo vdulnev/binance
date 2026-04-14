@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/env/env.dart';
 import '../../../core/env/env_manager.dart';
-import '../../../core/router/app_router.dart';
 import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
 
@@ -36,19 +35,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authProvider, (_, state) {
-      switch (state) {
-        case AuthAuthenticated():
-          context.router.replaceAll([const HomeRoute()]);
-        case AuthError(:final message):
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(message),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
-        case AuthUnauthenticated():
-        case AuthAuthenticating():
-          break;
+      if (state is AuthError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.message),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
       }
     });
 

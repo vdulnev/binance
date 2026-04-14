@@ -19,11 +19,9 @@ Future<void> main() async {
 
   await initServiceLocator();
 
-  // Restore the persisted env BEFORE the router mounts so the auth guard's
-  // first signed call hits the right Binance host. This must run after DI
-  // (so EnvManager + CredentialsManager exist) and before runApp (so the
-  // root MaterialApp.router doesn't construct the AuthGuard against a
-  // stale Dio).
+  // Restore the persisted env BEFORE the router mounts so the first signed
+  // call hits the right Binance host. This must run after DI (so EnvManager
+  // + CredentialsManager exist) and before runApp.
   final restoreResult = await sl<SessionManager>().restore().run();
   restoreResult.match(
     (err) => sl<Talker>().error(

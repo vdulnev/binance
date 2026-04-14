@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/di/service_locator.dart';
 import 'core/router/app_router.dart';
 
-class BinanceApp extends ConsumerWidget {
+class BinanceApp extends StatelessWidget {
   const BinanceApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final router = sl<AppRouter>();
     return MaterialApp.router(
       title: 'Binance',

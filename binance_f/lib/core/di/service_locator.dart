@@ -26,7 +26,6 @@ import '../db/portfolio_cache.dart';
 import '../env/env_manager.dart';
 import '../logging/app_talker.dart';
 import '../router/app_router.dart';
-import '../router/auth_guard.dart';
 import '../security/secure_storage_service.dart';
 import '../ws/user_data_stream.dart';
 
@@ -226,7 +225,5 @@ Future<void> initServiceLocator() async {
   );
 
   // Router
-  sl.registerLazySingleton<AppRouter>(
-    () => AppRouter(authGuard: AuthGuard(sessionManager: sl<SessionManager>())),
-  );
+  sl.registerLazySingleton<AppRouter>(AppRouter.new);
 }
