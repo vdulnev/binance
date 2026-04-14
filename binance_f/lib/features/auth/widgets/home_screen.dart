@@ -59,6 +59,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onPressed: () => ref.read(portfolioProvider.notifier).refresh(),
             ),
           IconButton(
+            key: const ValueKey('transfers'),
+            icon: const Icon(Icons.swap_horiz),
+            tooltip: 'Transfers',
+            onPressed: () =>
+                context.router.push(const TransfersRoute()),
+          ),
+          IconButton(
             key: const ValueKey('portfolio-logout'),
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',

@@ -230,3 +230,19 @@ class SymbolDetailRouteArgs {
   @override
   int get hashCode => key.hashCode ^ symbol.hashCode;
 }
+
+/// generated route for
+/// [TransfersScreen]
+class TransfersRoute extends PageRouteInfo<void> {
+  const TransfersRoute({List<PageRouteInfo>? children})
+    : super(TransfersRoute.name, initialChildren: children);
+
+  static const String name = 'TransfersRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const TransfersScreen();
+    },
+  );
+}

@@ -9,6 +9,7 @@ import '../../features/auth/data/auth_repository.dart';
 import '../../features/chart/data/chart_repository.dart';
 import '../../features/favorites/data/favorites_repository.dart';
 import '../../features/history/data/order_history_repository.dart';
+import '../../features/transfers/data/transfers_repository.dart';
 import '../../features/markets/data/market_ws_manager.dart';
 import '../../features/markets/data/markets_repository.dart';
 import '../../features/orderbook/data/orderbook_repository.dart';
@@ -213,6 +214,13 @@ Future<void> initServiceLocator() async {
     () => BinanceOrderHistoryRepository(
       spotDio: () => sl<Dio>(instanceName: kSpot),
       futuresDio: () => sl<Dio>(instanceName: kFutures),
+      sessionManager: sl<SessionManager>(),
+    ),
+  );
+
+  sl.registerLazySingleton<TransfersRepository>(
+    () => BinanceTransfersRepository(
+      spotDio: () => sl<Dio>(instanceName: kSpot),
       sessionManager: sl<SessionManager>(),
     ),
   );

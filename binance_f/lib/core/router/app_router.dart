@@ -8,6 +8,7 @@ import '../../features/history/widgets/order_history_screen.dart';
 import '../../features/symbol/widgets/symbol_detail_screen.dart';
 import '../../features/trade/widgets/futures_order_ticket_screen.dart';
 import '../../features/trade/widgets/order_ticket_screen.dart';
+import '../../features/transfers/widgets/transfers_screen.dart';
 import 'auth_guard.dart';
 
 part 'app_router.gr.dart';
@@ -42,6 +43,11 @@ class AppRouter extends RootStackRouter {
       guards: [_authGuard],
     ),
     AutoRoute(page: AlertsRoute.page, path: '/alerts', guards: [_authGuard]),
+    AutoRoute(
+      page: TransfersRoute.page,
+      path: '/transfers',
+      guards: [_authGuard],
+    ),
     AutoRoute(page: LoginRoute.page, path: '/login'),
   ];
 }
