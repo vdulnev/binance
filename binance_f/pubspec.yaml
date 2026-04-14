@@ -20,12 +20,12 @@ dependencies:
   talker_riverpod_logger: ^5.1.16
   auto_route: ^11.1.0
   get_it: ^9.2.1
-  flutter_secure_storage: ^9.2.4
+  flutter_secure_storage: ^10.0.0
   decimal: ^3.0.2
   fpdart: ^1.2.0
   drift: ^2.28.1
-  drift_flutter: ^0.2.5
-  sqlite3_flutter_libs: ^0.5.40
+  drift_flutter: ^0.3.0
+  sqlite3: ^3.0.0
   path_provider: ^2.1.4
   path: ^1.9.0
   web_socket_channel: ^3.0.3
